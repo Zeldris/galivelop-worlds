@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | F0: plan de versiones escrito en `docs/plan.md` (borrador, a confirmar por la persona: Q-14 a Q-16 de `docs/questions.md`). Falta llevar F0 a `main` |
+| **Fase / tarea** | F0: plan de versiones escrito en `docs/plan.md` (confirmado: Q-14 a Q-16). Falta llevar F0 a `main` |
 | **Último punto estable** | el commit «Flujo Galivelop-workflow v0.9.1»: flujo instalado, licencia MIT |
-| **Siguiente paso** | Con el plan confirmado, las tres fases antes de `main` (revisión del bloque, gw-opt-tokens + retro, reviewed.sh) y PR |
+| **Siguiente paso** | Las tres fases antes de `main` (revisión del bloque, gw-opt-tokens + retro, reviewed.sh) y PR |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde. Deuda: aún no hay código ni tests propios (llegan en W1) |
 
 ## Para la próxima publicación

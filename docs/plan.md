@@ -1,6 +1,6 @@
 # Plan: versiones de galivelop-worlds
 
-Reparto de los hitos de [`ddd.md` §7](ddd.md#7-escalera-de-hitos) en versiones. Este archivo dice qué está
+Reparto, confirmado el 2026-11-26 (Q-14 a Q-16), de los hitos de [`ddd.md` §7](ddd.md#7-escalera-de-hitos) en versiones. Este archivo dice qué está
 implementado; la bitácora, qué se está haciendo. Una tarea se marca `[x]` en el commit que la cierra.
 
 **Ids:** un prefijo por hito, con el patrón `taskId` de `.claude/gw.json` (`[A-Z]{2,5}-\d+`): `PCK` paquete y
