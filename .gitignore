@@ -1,0 +1,15 @@
+# galivelop-workflow:gitignore begin (managed block; rerun apply.py --init to refresh it)
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+/build/
+/dist/
+# galivelop-workflow:gitignore end
+# galivelop-workflow: private, never committed
+.claude/gw.local.json

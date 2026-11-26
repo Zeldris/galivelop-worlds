@@ -1,0 +1,245 @@
+#!/usr/bin/env bash
+# galivelop-workflow v0.9.1
+# Git pre-commit hook (copied into projects as .githooks/pre-commit; enable with: git config core.hooksPath .githooks).
+#   - No secrets in a commit: by file (.env except .env.example/.sample/.template, *.pem, *.key, *.p12, *.pfx, *.jks,
+#     id_rsa and friends, .netrc, and the local private list .claude/gw.local.json) and by added content (well-known
+#     key formats, and secret/password/token/api_key assignments with a literal value instead of an environment
+#     reference). A line containing gw-allow-secret is ignored (for a checked false positive). KEY_FORMATS below is
+#     also read by scripts/private-check.py: keep it on one line, in single quotes.
+#   - With CLAUDECODE=1 (an agent committing): no staged file under the config's protectedPaths (people's drafts); with an unreadable gw.json it warns and skips that check (the commit-msg hook refuses a non-WIP).
+#     Outside Claude Code that check does not run. Closing a merge/cherry-pick/rebase lets through files that come
+#     unchanged from the other side.
+#   - With logRows on: a task the commit closes in the plan is also in the log's "Done" (handoff.py closed --staged;
+#     the pre-push checks it again over the pushed range). Skipped while closing a merge/cherry-pick/rebase.
+#   - With logRows on: the staged log changes only the committing branch's own row (and the free ones), not
+#     another branch's (handoff.py own-row --staged; the pre-push checks it again). Skipped on a detached HEAD
+#     (WARNING) and while closing a merge/cherry-pick/rebase.
+#   - E41, first of all: neither the author nor the committer (git var GIT_AUTHOR_IDENT/GIT_COMMITTER_IDENT, so
+#     GIT_AUTHOR_*/GIT_COMMITTER_* and --amend count as in git) matches the config's authorDeny (config.py
+#     author-check); an empty list checks nothing. Fails closed without the identity; an unreadable gw.json uses the
+#     authorDeny committed at HEAD (E55); only without a readable one there either (first commit, file absent) it warns and
+#     skips it, like protectedPaths (commit-msg refuses a commit that is not WIP:). It covers git commit only: a clean
+#     merge, cherry-pick, revert or rebase skips this hook, so the pre-push checks every commit it pushes, and
+#     --range (CI) every commit of the range, with the base's authorDeny (a PR cannot empty it for itself).
+#   - B36, first (so the checks below see it): the token ledger metrics.ledger rides with the commit being made when it
+#     has changes (metrics.py stage-ledger: metrics.record and metrics.commitLedger on, not ignored, something else
+#     staged, no merge/cherry-pick/revert/rebase in progress, not git commit <paths>/--only). Fails closed without
+#     python3 or metrics.py; an unreadable gw.json warns and skips it.
+#   - C13 (scopeGuard, not off): staged files outside `## Files` of the current task's record (branch agent/<id>-..., else
+#     the mark gw/current-task) are warned about, or refused in block mode (scope-guard.py --staged; outside Claude Code
+#     too). Skipped while closing a merge/cherry-pick/rebase, and with no task, no record or no Files section.
+#   - D169 (installedCopyWarn, default on): a staged scripts/<file> that differs from its copy .claude/gw/scripts/<file> is
+#     warned about (never refused): the copy is stale, run python3 scripts/apply.py . Not in CI mode.
+#   - With logRows on, while concluding a merge: it does not keep two different tasks under one task id, one from each
+#     side (handoff.py clash --merging; the pre-push checks every new merge and the protected branch).
+# CI mode: pre-commit --range BASE..HEAD scans what the range adds instead of the staged changes (run the base
+# branch's copy of this hook, so a PR cannot weaken the check that reviews it).
+# --rango, its old name, still works in 0.x, with a warning.
+# Bash 3.2 compatible. Root from this hook's path, never from $CLAUDE_PROJECT_DIR or the current directory.
+set -uo pipefail
+hookdir="$(cd "$(dirname "$0")" && pwd)"
+# Git exports GIT_DIR/GIT_INDEX_FILE to the hook (in a linked worktree too), and with GIT_DIR set `rev-parse
+# --show-toplevel` answers the hook's own folder. Unset them for this one call (a subshell); the checks below keep them.
+root="$(unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE; git -C "$hookdir" rev-parse --show-toplevel 2>/dev/null)" || {
+  echo "pre-commit: $hookdir is not inside a git work tree; point git at the project's hooks: git config core.hooksPath .githooks" >&2; exit 1; }
+cd "$root" || exit 1
+
+if [ "${1:-}" = "--rango" ]; then
+  echo "pre-commit: warning: --rango is deprecated and will stop working in 1.0; use --range" >&2
+  shift
+  set -- --range "$@"
+fi
+if [ "${1:-}" = "--range" ]; then
+  [ -n "${2:-}" ] || { echo "pre-commit: --range needs a range; run: bash .githooks/pre-commit --range <base>..HEAD" >&2; exit 1; }
+  range="$2"; ci=1
+  git rev-parse -q --verify "${range%%..*}^{commit}" >/dev/null 2>&1 \
+    || { echo "pre-commit: the base of $range is not in this clone; fetch it: git fetch --deepen=200 origin" >&2; exit 1; }
+  fix_file="drop the file from the branch (and rotate the credential): git rm --cached <file> && git commit"
+  fix_line="remove the value from the branch (and rotate the credential), then commit: git commit -a"
+else
+  range="--cached"; ci=0
+  fix_file="unstage it: git restore --staged <file>"
+  fix_line="move the value to an environment variable, then stage again: git add -p"
+fi
+diff_of() { git diff "$range" "$@"; }
+
+# E41 in CI: the authors and committers of the range, against the base's authorDeny (a base without a readable
+# gw.json, as in the PR that adds the workflow, warns and skips it).
+if [ "$ci" = "1" ]; then
+  if [ -d "$root/.claude/gw/scripts" ]; then scripts="$root/.claude/gw/scripts"; else scripts="$root/scripts"; fi
+  rc=0
+  git rev-list "$range" | python3 "$scripts/config.py" --root "$root" --rev "${range%%..*}" author-check --commits - || rc=$?
+  if [ "$rc" = "2" ]; then
+    echo "pre-commit: WARNING: cannot read authorDeny from .claude/gw.json at ${range%%..*}, so the authors are not checked" >&2
+  elif [ "$rc" != "0" ]; then
+    exit 1
+  fi
+fi
+
+# B36: the token ledger goes with this commit (metrics.py stage-ledger decides when), before the checks below read it.
+if [ "$ci" = "0" ]; then
+  command -v python3 >/dev/null 2>&1 \
+    || { echo "pre-commit: python3 is not on PATH and the workflow's hooks need it; install Python 3.8+ or put it on PATH" >&2; exit 1; }
+  if [ -d "$root/.claude/gw/scripts" ]; then scripts="$root/.claude/gw/scripts"; else scripts="$root/scripts"; fi
+  for f in metrics.py config.py; do
+    [ -f "$scripts/$f" ] || { echo "pre-commit: $scripts/$f is missing; reinstall the workflow scripts: /gw-update" >&2; exit 1; }
+  done
+  # E41: exit 1 = a denied or unknown identity; exit 2 = unreadable gw.json (its fix is on stderr): warn and go on, as
+  # protectedPaths does, so a WIP: handoff still commits (commit-msg refuses the rest).
+  python3 "$scripts/config.py" --root "$root" author-check; rc=$?
+  if [ "$rc" = "2" ]; then
+    # E55: the working-tree gw.json is unreadable (a commit could be emptying authorDeny): use the one committed at HEAD.
+    python3 "$scripts/config.py" --root "$root" --rev HEAD author-check; rc=$?
+    if [ "$rc" = "2" ]; then
+      echo "pre-commit: WARNING: cannot read authorDeny from .claude/gw.json, nor from HEAD, so the author is not checked; commit-msg refuses a commit that is not WIP:. Fix it: python3 $scripts/config.py --root $root validate" >&2
+    elif [ "$rc" != "0" ]; then
+      echo "pre-commit: refused using authorDeny from HEAD, because .claude/gw.json in the working tree is unreadable (fix it: python3 $scripts/config.py --root $root validate)" >&2
+      exit 1
+    fi
+  elif [ "$rc" != "0" ]; then
+    exit 1
+  fi
+  python3 "$scripts/metrics.py" stage-ledger --root "$root" || exit 1
+fi
+
+names="$(diff_of --name-only --no-renames --diff-filter=ACMR)" || { echo "pre-commit: git diff failed; check the range: git log $range" >&2; exit 1; }
+bad_files="$(printf '%s\n' "$names" \
+  | grep -E '(^|/)\.env(\.[^/]*)?$|\.(pem|key|p12|pfx|jks|keystore)$|(^|/)id_(rsa|dsa|ecdsa|ed25519)$|(^|/)\.netrc$|(^|/)\.claude/gw\.local\.json$' \
+  | grep -vE '(^|/)\.env\.(example|sample|template)$' || true)"
+if [ -n "$bad_files" ]; then
+  echo "pre-commit: these files hold credentials or private data (.claude/gw.local.json) and are never committed:" >&2
+  printf '  %s\n' "$bad_files" >&2
+  echo "pre-commit: $fix_file" >&2
+  exit 1
+fi
+
+added="$(diff_of -U0 --no-renames --diff-filter=ACMR | grep -E '^\+' | grep -vE '^\+\+\+ ' | grep -v 'gw-allow-secret' || true)"
+# Prefixes that identify a key by themselves match anywhere, even glued to a letter or digit ("\nsk-ant-…", "a%3DAKIA…",
+# "1AKIA…"). Only the generic sk-… and [rs]k_live_… need a left edge, so a word that merely ends in them (musk-tells-…,
+# task-…, disk-…) is not taken for a key. For them a digit, an escaped \n/\r/\t or a %XX before the key counts as an
+# edge too ("\nsk-or-v1-…", "a%3Dsk_live_…", "1sk-…"); sk-ant-/sk-proj-/sk-svcacct- match glued to anything.
+KEY_FORMATS='-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,}|xox[abposr]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{35}|sk-(ant|proj|svcacct)-[A-Za-z0-9_-]{20,}|gsk_[A-Za-z0-9]{20,}|glpat-[0-9A-Za-z_-]{20,}|(^|[^A-Za-z]|\\[nrt]|%[0-9A-Fa-f]{2})(sk-[A-Za-z0-9_-]{20,}|[rs]k_live_[0-9A-Za-z]{20,})'
+found="$(printf '%s\n' "$added" | grep -oE -e "$KEY_FORMATS" | head -n 5 || true)"
+if [ -n "$found" ]; then
+  echo "pre-commit: the commit adds something shaped like a key or token:" >&2
+  printf '%s\n' "$found" | sed -E 's/^(\\[nrt]|%[0-9A-Fa-f]{2}|[^A-Za-z0-9-])//; s/^(.{8}).*/  \1…/' >&2
+  echo "pre-commit: keys belong in environment variables or a secrets manager, never in the repo; $fix_line" >&2
+  exit 1
+fi
+
+# Assignments with a literal value: NAME = "value" anywhere; NAME=value unquoted in config files. Names end in
+# secret, password, passwd, token or api_key/apikey/api.key/api-key (a dot too: openai.api.key in .properties), or in
+# key glued to an LLM provider (openaikey, OPENAI_KEY, anthropic-key). A bare `*key` suffix is NOT matched on purpose:
+# primary_key, sort_key, cache_key = "user:{id}" or monkey = "banana" are everyday code and would block commits
+# everywhere. ${VAR}, $VAR, <placeholder> and empty values pass; unquoted, so do read/write/none/true/false and values
+# under 8 characters (GitHub Actions' `id-token: write`, `token: false`).
+PROVIDER='[Oo][Pp][Ee][Nn][Aa][Ii]|[Aa][Nn][Tt][Hh][Rr][Oo][Pp][Ii][Cc]|[Cc][Ll][Aa][Uu][Dd][Ee]|[Gg][Ee][Mm][Ii][Nn][Ii]|[Gg][Rr][Oo][Qq]|[Mm][Ii][Ss][Tt][Rr][Aa][Ll]|[Cc][Oo][Hh][Ee][Rr][Ee]|[Dd][Ee][Ee][Pp][Ss][Ee][Ee][Kk]|[Hh][Uu][Gg][Gg][Ii][Nn][Gg][Ff][Aa][Cc][Ee]|[Oo][Pp][Ee][Nn][Rr][Oo][Uu][Tt][Ee][Rr]|[Pp][Ee][Rr][Pp][Ll][Ee][Xx][Ii][Tt][Yy]'
+NAME="[A-Za-z0-9_.-]*([Ss][Ee][Cc][Rr][Ee][Tt]|[Pp][Aa][Ss][Ss][Ww]([Oo][Rr])?[Dd]|[Tt][Oo][Kk][Ee][Nn]|[Aa][Pp][Ii][._-]?[Kk][Ee][Yy]|(${PROVIDER})[._-]?[Kk][Ee][Yy])"
+QUOTED="^\\+.*${NAME}[\"']?[[:space:]]*(:=|=|:)[[:space:]]*(\"[^\"\$<{][^\"]{3,}\"|'[^'\$<{][^']{3,}')"
+# In Markdown (.md, .markdown, .mdx, any case) a quoted key is usually an example or a translation label, so an
+# assignment whose value looks like prose is dropped before QUOTED runs: it starts with a capital and has no digit
+# and at least two words (E38: a one-word capitalised value is a password, not prose; "Bearer ..." never counts).
+# Anything else there (a token, a passphrase, a value with digits) is still refused.
+PROSE_ASSIGN="${NAME}[\"']?[[:space:]]*(:=|=|:)[[:space:]]*(\"[A-Z][^\"0-9[:space:]]*[[:space:]][^\"0-9]{2,}\"|'[A-Z][^'0-9[:space:]]*[[:space:]][^'0-9]{2,}')"
+UNQUOTED="^\\+[[:space:]]*(export[[:space:]]+)?${NAME}[[:space:]]*[=:][[:space:]]*[^[:space:]\$<{\"'#]"
+HARMLESS="^\\+[[:space:]]*(export[[:space:]]+)?${NAME}[[:space:]]*[=:][[:space:]]*([Rr][Ee][Aa][Dd]|[Ww][Rr][Ii][Tt][Ee]|[Nn][Oo][Nn][Ee]|[Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee]|[^[:space:]#]{1,7})[[:space:]]*(#.*)?$"
+added_lines() { grep -E '^\+' | grep -vE '^\+\+\+ ' | grep -v 'gw-allow-secret' || true; }
+examples=(':!*.env.example' ':!*.env.sample' ':!*.env.template')
+# A dict of absolute path -> error code ("/srv/app/token": "E123") is not an assignment: that pair is dropped first.
+PATHCODE='"\/[^"]*"[[:space:]]*:[[:space:]]*"[A-Z]{1,4}[-_]?[0-9]{1,6}"'
+literal="$(diff_of -U0 --no-renames --diff-filter=ACMR -- . "${examples[@]}" ':(exclude,icase)*.md' ':(exclude,icase)*.markdown' ':(exclude,icase)*.mdx' | added_lines | sed -E "s/$PATHCODE//g" | grep -E "$QUOTED" | head -n 5 || true)"
+md_prose_dropped() { # lines of stdin that still match QUOTED once the prose assignments (and PATHCODE pairs) are removed
+  # One sed for all lines (E38): keep the line in the hold space, strip the copy, and print the line when the copy matches.
+  sed -nE "h; s/$PATHCODE//g; s/([\"'])Bearer /\10earer /g; s/$PROSE_ASSIGN//g; /$QUOTED/{x;p;}"
+}
+md_literal="$(diff_of -U0 --no-renames --diff-filter=ACMR -- ':(icase)*.md' ':(icase)*.markdown' ':(icase)*.mdx' "${examples[@]}" | added_lines | md_prose_dropped | head -n 5 || true)"
+literal="$literal$(printf '\n%s' "$md_literal")"
+config_added="$(diff_of -U0 --no-renames --diff-filter=ACMR -- '*.env' '.env*' '*.properties' '*.yml' '*.yaml' \
+  '*.toml' '*.ini' '*.cfg' '*.conf' "${examples[@]}" | added_lines)"
+literal="$literal$(printf '\n%s' "$(printf '%s\n' "$config_added" | grep -E "$UNQUOTED" | grep -vE "$HARMLESS" | head -n 5 || true)")"
+literal="$(printf '%s\n' "$literal" | grep . | sed -E 's/^\+[[:space:]]*//; s/^(.{40}).*/\1…/' | sort -u || true)"
+if [ -n "$literal" ]; then
+  echo "pre-commit: these lines assign a literal secret; use an environment reference such as \${VAR} instead:" >&2
+  printf '  %s\n' "$literal" >&2
+  echo "pre-commit: (a checked false positive can carry the comment gw-allow-secret) $fix_line" >&2
+  exit 1
+fi
+
+# Paths an agent may not commit (people's work in progress). Only under Claude Code, only for staged changes.
+if [ "${CLAUDECODE:-}" = "1" ] && [ "$ci" = "0" ]; then
+  if [ -d "$root/.claude/gw/scripts" ]; then scripts="$root/.claude/gw/scripts"; else scripts="$root/scripts"; fi
+  # The message does not exist yet, so a WIP handoff cannot be told apart here: with an unreadable gw.json, warn and skip
+  # protectedPaths; commit-msg then refuses every commit that is not WIP (fail closed there, where the message is known).
+  prefixes="$(python3 "$scripts/config.py" --root "$root" get protectedPaths)" || {
+    prefixes=""
+    echo "pre-commit: WARNING: cannot read protectedPaths from .claude/gw.json, so none are checked; commit-msg refuses a commit that is not WIP:. Fix it: python3 $scripts/config.py --root $root validate" >&2; }
+  if [ -n "$prefixes" ]; then
+    others=""
+    for head in MERGE_HEAD CHERRY_PICK_HEAD REBASE_HEAD; do
+      [ -e "$(git rev-parse --git-path "$head")" ] && others="$others $head"
+    done
+    blob() { git rev-parse -q --verify "$1" 2>/dev/null || echo absent; }
+    refused=""
+    # --no-renames: a file moved out of a protected folder shows as deleted there and is refused too.
+    staged="$(git diff --cached --no-renames --name-only)"
+    while IFS= read -r path; do
+      [ -n "$path" ] || continue
+      hit=""
+      while IFS= read -r prefix; do
+        [ -n "$prefix" ] || continue
+        case "$path" in "$prefix"*) hit=1 ;; esac
+      done <<<"$prefixes"
+      [ -n "$hit" ] || continue
+      if [ -n "$others" ]; then
+        mine=$(blob ":$path"); [ "$mine" = "$(blob "HEAD:$path")" ] && continue
+        from_other=""
+        for head in $others; do [ "$mine" = "$(blob "$head:$path")" ] && from_other=1; done
+        [ -n "$from_other" ] && continue
+      fi
+      refused="$refused$path"$'\n'
+    done <<<"$staged"
+    if [ -n "$refused" ]; then
+      echo "pre-commit: these staged files are under protectedPaths (someone's work in progress; agents do not commit them):" >&2
+      printf '%s' "$refused" | sed 's/^/  /' >&2
+      first="$(printf '%s' "$refused" | head -n 1)"
+      echo "pre-commit: unstage them: git restore --staged -- '$first'" >&2
+      exit 1
+    fi
+  fi
+fi
+
+# D169: a staged scripts/ file that differs from its installed copy (apply.py . not run yet): warn, never refuse.
+if [ "$ci" = "0" ] && [ -d "$root/.claude/gw/scripts" ] && [ -d "$root/scripts" ] \
+   && python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import config; sys.exit(0 if config.is_workflow(sys.argv[2]) else 1)' \
+        "$root/.claude/gw/scripts" "$root" 2>/dev/null; then
+  # only in the workflow repo: a project's own scripts/ has no copy to refresh (and no apply.py to refresh it with)
+  scripts="$root/.claude/gw/scripts"
+  if [ "$(python3 "$scripts/config.py" --root "$root" get installedCopyWarn 2>/dev/null)" != "false" ]; then
+    stale=""
+    while IFS= read -r path; do
+      case "$path" in scripts/*) ;; *) continue ;; esac
+      # the copy as staged, not as on disk: `git add scripts/<f>` without the copy must still warn
+      copy_id="$(git rev-parse -q --verify ":.claude/gw/$path" 2>/dev/null)" || continue
+      [ "$(git rev-parse ":$path")" = "$copy_id" ] || stale="$stale$path"$'\n'
+    done <<<"$(git diff --cached --no-renames --name-only --diff-filter=ACM)"
+    if [ -n "$stale" ]; then
+      echo "pre-commit: WARNING: these staged scripts/ files differ from their installed copy in .claude/gw/scripts/, so the hooks run the old ones:" >&2
+      printf '%s' "$stale" | sed 's/^/  /' >&2
+      echo "pre-commit: refresh the copies and stage them: python3 scripts/apply.py . && git add -A" >&2
+    fi
+  fi
+fi
+
+# Tasks closed in the plan, recorded in the log's "Done" before the commit exists (not after, with --amend).
+if [ "$ci" = "0" ]; then
+  if [ -d "$root/.claude/gw/scripts" ]; then scripts="$root/.claude/gw/scripts"; else scripts="$root/scripts"; fi
+  for f in handoff.py config.py scope-guard.py questions-guard.py questions.py task.py; do
+    [ -f "$scripts/$f" ] || { echo "pre-commit: $scripts/$f is missing; reinstall the workflow scripts: /gw-update" >&2; exit 1; }
+  done
+  # C13: staged files outside `## Files` of the current task's record (scopeGuard: warn, or refuse in block mode).
+  python3 "$scripts/scope-guard.py" --staged --root "$root" || exit 1
+  python3 "$scripts/handoff.py" --root "$root" closed --staged >&2 || exit 1
+  python3 "$scripts/handoff.py" --root "$root" own-row --staged >&2 || exit 1
+  python3 "$scripts/handoff.py" --root "$root" clash --merging >&2 || exit 1
+fi
+exit 0
