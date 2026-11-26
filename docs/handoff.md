@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | Flujo Galivelop-workflow v0.9.1 aplicado. F-1 (mejorar, ampliar y cerciorar el DDD) en curso: borrador 2 en `docs/ddd.md`, comprobado contra gart, gmod, grun, WMF y consumidores; 13 preguntas abiertas en `docs/questions.md` (Q-1 a Q-13); F0 (decisiones a `main` y reparto en versiones) después |
+| **Fase / tarea** | Flujo Galivelop-workflow v0.9.1 aplicado. F-1 cerrada: DDD v1 en `docs/ddd.md` con decisiones D1-D13 y ADR 0001-0006. Toca F0 (decisiones a `main` y reparto en versiones); F0 (decisiones a `main` y reparto en versiones) después |
 | **Último punto estable** | el commit «Flujo Galivelop-workflow v0.9.1»: flujo instalado, licencia MIT |
-| **Siguiente paso** | F-1: apuntar las respuestas de la persona a Q-1…Q-13 (`questions.py answer`), pasarlas a «Decisiones» del DDD y a ADR en `docs/adr/`, y cerrar F-1 |
+| **Siguiente paso** | F0: repartir los hitos W1-W6 en versiones (plan), luego las tres fases antes de `main` (revisión del bloque, gw-opt-tokens + retro, reviewed.sh) y PR |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde. Deuda: aún no hay código ni tests propios (llegan en W1) |
 
 ## Para la próxima publicación
@@ -20,8 +20,9 @@ F0: el DDD cerrado con sus decisiones y la escalera de versiones; espera a termi
 
 ## Hecho (5 últimas)
 
-1. 2026-11-26 — DDD borrador 2: comprobado contra los repos hermanos y WMF; el mundo vivo se rediseña, el mapa se importa, ids de hecho derivados, «Narrador» en vez de «Cronista».
-2. 2026-11-26 — Galivelop-workflow v0.9.1 aplicado (idioma es, PR a `main`, sin firmas del agente, prefijo `gwd-`,
+1. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
+2. 2026-11-26 — DDD borrador 2: comprobado contra los repos hermanos y WMF; el mundo vivo se rediseña, el mapa se importa, ids de hecho derivados, «Narrador» en vez de «Cronista».
+3. 2026-11-26 — Galivelop-workflow v0.9.1 aplicado (idioma es, PR a `main`, sin firmas del agente, prefijo `gwd-`,
    licencia MIT).
 
 ## Pendiente

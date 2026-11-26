@@ -1,4 +1,4 @@
-# DDD: galivelop-worlds (borrador 2, 2026-11-26)
+# DDD: galivelop-worlds (v1, 2026-11-26)
 
 **Uso:** kit para hacer mundos de ficción vivos con IA local. Saca de Tarkor lo que no es de Tarkor: el mundo vivo
 (turnos y simulación), los mapas, el RAG del lore y el comprobador de canon. Tarkor pasa a ser el primer «paquete de
@@ -253,7 +253,8 @@ Cada una lleva su test.
 
 ## 8. Preguntas abiertas
 
-Cada una con su recomendación. Las respuestas pasan a «Decisiones» y, las de peso, a un ADR en `docs/adr/`.
+Todas decididas el 2026-11-26 según su recomendación: se quedan aquí como registro del porqué; lo que vale es la
+tabla de «Decisiones» y los ADR de `docs/adr/`.
 
 1. **¿Extraer de Tarkor o reescribir?** El turno de WMF es un monolito sobre Prisma y Postgres, con azar sin semilla
    y reloj real; su mapa se importa, no se genera.
@@ -306,6 +307,20 @@ Cada una con su recomendación. Las respuestas pasan a «Decisiones» y, las de 
 
 ## Decisiones
 
+Tomadas el 2026-11-26 (Q-1 a Q-13 de `docs/questions.md`).
+
 | id | pregunta | respuesta | sección |
 |---|---|---|---|
-| — | — | _(ninguna aún: pendientes de §8)_ | — |
+| D1 | ¿Extraer de Tarkor o reescribir? | Reescribir el núcleo contra este DDD; oráculo de escenarios dorados de WMF. [ADR 0001](adr/0001-reescribir-el-nucleo.md) | §3.1, §8.1 |
+| D2 | ¿Nombre del adaptador de narración? | `Narrator` / «Narrador»; «Cronista» no se usa en el kit. [ADR 0002](adr/0002-narrador-no-cronista.md) | §2, §3.5 |
+| D3 | ¿Licencia del contenido de Tarkor? | CC BY-NC-SA 4.0, la de WMF; falta la confirmación de Álvaro y corregir el instalador. [ADR 0003](adr/0003-licencias.md) | §4, §5.8 |
+| D4 | ¿Qué hacer mientras gart, gmod y grun solo tienen diseño? | Esquemas en formato gart con comprobación mínima propia; perfil fijo de Steam Deck sin `gmod.machine/0`; W6 espera a grun R5. | §7 |
+| D5 | ¿Python o TypeScript? | Contrato en artefactos gart; núcleo Python ≥ 3.10 stdlib; el turno de Tarkor sigue en TypeScript hasta W5. [ADR 0004](adr/0004-stack.md) | §5.13 |
+| D6 | ¿Ids de hecho sin tocar el canon? | Derivados al cargar (archivo, ruta de encabezados, huella del texto normalizado) y guardados en `gworld.canon/0`. [ADR 0005](adr/0005-ids-de-hecho.md) | §3.3, §5.5 |
+| D7 | ¿De dónde salen los embeddings? | Se pide a grun un turno de embeddings; mientras, `Embedder` con `grun.lock/0` y `nomic-embed-text` versionado en el índice. [ADR 0006](adr/0006-rag-almacen-y-embeddings.md) | §3.3, §5.12 |
+| D8 | ¿Comprobador determinista o juez con IA? | Dos capas: determinista obligatoria y `Judge` opcional apuntado en `gworld.check/0`. | §3.4 |
+| D9 | ¿Generar mapas o importarlos? | Importar FMG en las primeras versiones; generación por semilla después como un `MapImporter` más. | §3.2 |
+| D10 | ¿De quién son los prompts del Narrador? | El kit pone el adaptador (orden de bloques, recuperación, grun, reintentos, plantilla de respaldo y comprobación); el paquete, prompts, tono y modelos. | §3.5 |
+| D11 | ¿Qué capa del canon indexa el RAG? | Solo `docs/rpgtarkor/`; `docs/canon-opencode/` puede ir fijo en el prompt, nunca como fuente de un `Fact`. | §3.3 |
+| D12 | ¿Abreviaturas oficiales? | `gworld` como paquete y espacio de artefactos; se pide al portal que lo recoja. | cabecera |
+| D13 | ¿Cuándo empieza cada hito? | W0 ya; W1 a W4 cuando se quiera (solo leen de WMF); W5 y W6 tras la congelación de WMF. | §7 |
