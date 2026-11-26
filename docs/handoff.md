@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | Flujo Galivelop-workflow v0.9.1 aplicado. F-1 (mejorar, ampliar y cerciorar el DDD) pendiente; F0 (decisiones a `main` y reparto en versiones) después |
+| **Fase / tarea** | Flujo Galivelop-workflow v0.9.1 aplicado. F-1 (mejorar, ampliar y cerciorar el DDD) en curso: borrador 1 guardado tal cual en `docs/ddd.md`; F0 (decisiones a `main` y reparto en versiones) después |
 | **Último punto estable** | el commit «Flujo Galivelop-workflow v0.9.1»: flujo instalado, licencia MIT |
-| **Siguiente paso** | F-1: escribir el DDD borrador 1 en `docs/ddd.md` y revisarlo (huecos, contradicciones, invariantes sin test, preguntas de §8) |
+| **Siguiente paso** | F-1: con el informe de los subagentes (gart, gmod, grun y consumidores leídos; WMF pendiente), escribir el borrador 2 de `docs/ddd.md` con lo comprobado y la lista de preguntas para la persona |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde. Deuda: aún no hay código ni tests propios (llegan en W1) |
 
 ## Para la próxima publicación
