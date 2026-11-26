@@ -119,3 +119,24 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 - Recommendation: W0 ya; W1-W4 cuando quieras; W5-W6 tras la congelación de WMF
 - Answer: según la recomendación
 - Answered: 2026-11-26
+
+## Q-14
+- Refs: W0
+- Status: open
+- Asked: 2026-11-26
+- Question: Plan §Versiones: ¿qué escalera de versiones?
+- Recommendation: Una versión menor por hito (0.1-0.5) y 1.0 cuando Tarkor consume el kit (W6)
+
+## Q-15
+- Refs: W0
+- Status: open
+- Asked: 2026-11-26
+- Question: Plan §Versiones: ¿en qué orden van los hitos?
+- Recommendation: W1, W4, W2, W3, W5, W6: W4 sube porque no tiene bloqueos externos y W5 lo necesita
+
+## Q-16
+- Refs: W0
+- Status: open
+- Asked: 2026-11-26
+- Question: Plan §Ids: ¿qué prefijos de tarea?
+- Recommendation: Prefijos PCK, MAP, CHK, RAG, VIV, NAR por hito

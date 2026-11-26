@@ -9,20 +9,21 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | Flujo Galivelop-workflow v0.9.1 aplicado. F-1 cerrada: DDD v1 en `docs/ddd.md` con decisiones D1-D13 y ADR 0001-0006. Toca F0 (decisiones a `main` y reparto en versiones); F0 (decisiones a `main` y reparto en versiones) después |
+| **Fase / tarea** | F0: plan de versiones escrito en `docs/plan.md` (borrador, a confirmar por la persona: Q-14 a Q-16 de `docs/questions.md`). Falta llevar F0 a `main` |
 | **Último punto estable** | el commit «Flujo Galivelop-workflow v0.9.1»: flujo instalado, licencia MIT |
-| **Siguiente paso** | F0: repartir los hitos W1-W6 en versiones (plan), luego las tres fases antes de `main` (revisión del bloque, gw-opt-tokens + retro, reviewed.sh) y PR |
+| **Siguiente paso** | Con el plan confirmado, las tres fases antes de `main` (revisión del bloque, gw-opt-tokens + retro, reviewed.sh) y PR |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde. Deuda: aún no hay código ni tests propios (llegan en W1) |
 
 ## Para la próxima publicación
 
-F0: el DDD cerrado con sus decisiones y la escalera de versiones; espera a terminar F-1
+F0: el DDD cerrado con sus decisiones (D1-D13, ADR 0001-0006) y el plan de versiones (`docs/plan.md`)
 
 ## Hecho (5 últimas)
 
-1. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
-2. 2026-11-26 — DDD borrador 2: comprobado contra los repos hermanos y WMF; el mundo vivo se rediseña, el mapa se importa, ids de hecho derivados, «Narrador» en vez de «Cronista».
-3. 2026-11-26 — Galivelop-workflow v0.9.1 aplicado (idioma es, PR a `main`, sin firmas del agente, prefijo `gwd-`,
+1. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
+2. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
+3. 2026-11-26 — DDD borrador 2: comprobado contra los repos hermanos y WMF; el mundo vivo se rediseña, el mapa se importa, ids de hecho derivados, «Narrador» en vez de «Cronista».
+4. 2026-11-26 — Galivelop-workflow v0.9.1 aplicado (idioma es, PR a `main`, sin firmas del agente, prefijo `gwd-`,
    licencia MIT).
 
 ## Pendiente

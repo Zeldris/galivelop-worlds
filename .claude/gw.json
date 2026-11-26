@@ -310,7 +310,7 @@
     "rules": [],
     "command": ""
   },
-  "plan": [],
+  "plan": ["docs/plan.md"],
   "taskId": "[A-Z]{2,5}-\\d+",
   "subagentCap": 30,
   "subagentCapStep": 10,
