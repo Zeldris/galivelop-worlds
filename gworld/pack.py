@@ -2,7 +2,8 @@
 
 No escribe nada. Fallos como ``PackError`` con ``code`` estable: ``no_manifest``, ``bad_json``,
 ``schema``, ``canon_outside``, ``canon_missing``, ``canon_hash``, ``canon_special`` (FIFO, socket o dispositivo en el canon),
-``canon_name`` (nombre no UTF-8), ``too_deep`` (JSON demasiado anidado), ``unreadable`` (error de E/S).
+``canon_name`` (nombre no UTF-8), ``map_rules_outside``, ``map_rules_missing``, ``map_rules_invalid`` (``mapRules``
+fuera del paquete, sin archivo o que no valida), ``too_deep`` (JSON demasiado anidado), ``unreadable`` (error de E/S).
 """
 
 import hashlib
@@ -12,6 +13,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from gworld.maprules import load_map_rules
+from gworld.maps import MapError
 from gworld.schema import validate
 from gworld.schemas import load_schema
 
@@ -45,6 +48,7 @@ class WorldPack:
     licence: Licence
     canon_path: Path
     rules: tuple[str, ...]
+    map_rules: Path | None = None  # reglas de mapa (gworld.maprules/0), si el manifiesto trae mapRules
 
 
 def _inside(p: Path, root: Path) -> bool:
@@ -147,6 +151,10 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
     if actual != expected:
         raise PackError("canon_hash", f"la huella del canon no cuadra: esperada {expected}, real {actual}")
 
+    map_rules = None
+    if "mapRules" in manifest:
+        map_rules = _map_rules_path(root, manifest["mapRules"])
+
     return WorldPack(
         root=root,
         manifest=manifest,
@@ -154,4 +162,28 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
         licence=Licence(lic.get("spdx"), lic.get("text"), lic.get("conditions")),
         canon_path=canon,
         rules=tuple(manifest["rules"]),
+        map_rules=map_rules,
     )
+
+
+def _map_rules_path(root: Path, rel: str) -> Path:
+    """Ruta de ``mapRules``: relativa, dentro del paquete (como el canon), archivo que existe y valida."""
+    if "\0" in rel:
+        raise PackError("map_rules_outside", f"mapRules {rel!r} contiene un carácter nulo")
+    try:
+        root_r = root.resolve()
+        if Path(rel).is_absolute() or Path(rel).drive:
+            raise PackError("map_rules_outside", f"mapRules {rel!r} es absoluta")
+        f = root / rel
+        outside = not _inside(Path(os.path.normpath(root_r / rel)), root_r) or not _inside(f.resolve(), root_r)
+    except (ValueError, OSError) as e:
+        raise PackError("map_rules_outside", f"mapRules {rel!r} no se puede resolver: {e}") from e
+    if outside:
+        raise PackError("map_rules_outside", f"mapRules {rel!r} sale del paquete")
+    if not f.is_file():
+        raise PackError("map_rules_missing", f"no existe el archivo de reglas de mapa {rel!r}")
+    try:
+        load_map_rules(f)
+    except MapError as e:
+        raise PackError("map_rules_invalid", f"las reglas de mapa {rel!r} no valen: {e}", e.detail) from e
+    return f

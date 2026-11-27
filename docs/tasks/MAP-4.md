@@ -61,7 +61,7 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 
 ## Acceptance
 
-- [ ] `gworld.maprules/0` valida; `bind` falla con cada código y su id; `load_pack` con y sin `mapRules`.
+- [x] `gworld.maprules/0` valida; `bind` falla con cada código y su id; `load_pack` con y sin `mapRules`.
 - [ ] Geometría: bloque 2×2 de celdas cuadradas de 10 da 1 polígono, área 400 y envolvente (20, 20); celdas 0 y 3
   dan área 200; un anillo con hueco resta el hueco; `unitKm` 2 multiplica el área por 4.
 - [ ] Cada tipo de regla tiene un test que pasa y otro que falla con su detalle, sobre mapas hechos a mano, y un
@@ -72,7 +72,7 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 
 ## Files
 
-- `gworld/schemas/maprules-0.json`, `gworld/schemas/pack-0.json`, `gworld/schema.py` (registro)
+- `gworld/schemas/maprules-0.json`, `gworld/schemas/pack-0.json`, `gworld/schemas/__init__.py` (registro; `gworld/schema.py` no cambia)
 - `gworld/pack.py`, `gworld/geometry.py`, `gworld/maprules.py`
 - `tools/tarkor_maprules.py`
 - `tests/test_maprules.py`, `tests/test_geometry.py`, `tests/test_pack.py`, `tests/test_tarkor_maprules.py`
@@ -82,6 +82,19 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 
 - 2026-11-27: contrato escrito por la sesión principal con Q-26 a Q-30 contestadas (recomendaciones aceptadas).
   `comprobar.py` no lee `canon.json`: las reglas son de `lore.json` y las medidas de `medir.py`; aquí van juntas.
+- 2026-11-27: paso 1. Tabla `gworld.maprules.PARAMS` (nombre → `Param(kind, arg, required)`; zona `any` = cualquier capa).
+  Tipos: `order` axis (north-south, south-north, west-east, east-west), groups (≥2 listas de zonas); `side-of` a, b,
+  side (north/south/east/west); `border` a, b, orientation (north-south, east-west); `coast-to-coast` zone, axis
+  (west-east, north-south); `only-borders` zone, with (lista); `borders` a, b; `closes-by` zone, edge (cardinal), by,
+  min, strip opcional; `narrows` zone, toward (cardinal), between, and, max; `corridor` from (capa province), to,
+  along, side (cardinal); `inside` landmass (capa landmass), zones; `no-land-outside` landmasses (capa landmass),
+  name; `area`/`extent` zone; `distance` places (2 ids enteros de lugar); `value` (número; extent: par) o `range`
+  (par lo ≤ hi), exactamente uno (en `undecided`, como mucho uno); `edge` landmass, side; `shape` zone opcional.
+  Esquema con parámetros libres (los comprueba `bind`); `tolerance` ≥ 0, `undecided` opcional. `load_map_rules`: `unreadable`,
+  `malformed`, `schema`, `duplicate_rule` (id repetido también entre `rules` y `undecided`). `bind` comprueba en orden
+  map_mismatch, bad_params (tipo no admitido en su lista, sobran, faltan, forma), y por parámetro bad_direction /
+  unknown_ref / wrong_layer. `check_facts` da los ids de hecho ausentes, sin repetir. `mapRules` en el paquete:
+  `map_rules_outside`, `map_rules_missing`, `map_rules_invalid` (detail de `MapError`).
 
 ## Verification
 
