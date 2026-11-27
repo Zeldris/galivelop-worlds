@@ -1,0 +1,116 @@
+<!-- galivelop-workflow v0.9.1 -->
+# Guía de revisión
+
+Lo que el revisor (`/code-review`, o cualquier agente que revise un diff) comprueba en cada diff de galivelop-worlds,
+además de los fallos de siempre. Lo mecánico ya lo hacen el check (`python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`) y los ganchos de git; aquí está lo que
+pide criterio. Cada regla acaba en `(check: …)`, con lo que la hace cumplir, o en `(criterio)` si no hay check; una
+regla mecánica marcada `(criterio)` pide su check. La rellena el proyecto; el flujo nunca la sobrescribe una vez
+creada.
+
+## Cómo se informa
+
+- Antes de dar un hallazgo, intenta refutarlo: busca el código, el test o el gancho que ya lo cubre. Solo se informa
+  de lo que sobrevive, con la ruta y la línea. (criterio)
+- Los hallazgos se escriben también en un archivo fuera del árbol (el scratchpad, o
+  `"$(git rev-parse --git-dir)/review.md"`), no solo en la conversación: una compactación o un relevo se los lleva, y
+  de ese archivo salen los encargos de los arreglos y los leves que se apuntan en la bitácora. (criterio)
+- Cada hallazgo cita su **ancla**: una regla de `REVIEW.md` o de `AGENTS.md`, un criterio de aceptación de la ficha
+  de la tarea (`docs/tasks/<id>.md`), una línea del plan o un fallo demostrado. Formato:
+  `ruta:línea | severidad | ancla | problema. arreglo.` (criterio)
+- Lo que no tiene ancla no es un hallazgo: va aparte, en una sección «Observaciones», sin severidad, y no bloquea el
+  veredicto. (criterio)
+- Un dato que caduca (una versión, un precio, una cuota, un límite de un servicio externo) escrito en el diff lleva su
+  fecha y su fuente; si no, es un hallazgo. (criterio)
+- La revisión acaba con un veredicto, uno de tres: `SHIP` (nada que arreglar), `SHIP WITH FIXES` (hay arreglos, ninguno
+  bloquea) o `DO NOT SHIP` (algo grave o que rompe). (criterio)
+
+## Un dato, un sitio
+
+- Un dato que ya vive en un sitio (un archivo de configuración, uno de datos, una constante) no se repite a mano en
+  el código, la documentación ni el README; si hay que repetirlo, todas las copias cambian en el mismo commit.
+  (criterio)
+- La configuración del flujo vive solo en `.claude/gw.json` y solo la lee `.claude/gw/scripts/config.py`. (criterio)
+
+## Ganchos y scripts
+
+- La raíz del repo se saca de la ruta del script (`$(dirname "$0")`) o de `git rev-parse --show-toplevel`, nunca de
+  `$CLAUDE_PROJECT_DIR` ni del directorio actual: una sesión puede arrancar fuera del repo. (criterio)
+- Un gancho de subida comprueba **el commit que se sube**, no la carpeta de trabajo. (criterio)
+- Los ganchos **fallan cerrados** cuando les falta un dato (un commit que el clon no tiene, una API que no responde),
+  con la orden que lo arregla. Excepción razonada: las claves de rutas (`log`, `reviewMark`, `recordsDir`,
+  `proposalsDir`, `ciLocalLog`) son opcionales con defecto en inglés, así que una ausente no es un dato que falte.
+  (criterio)
+- Los scripts de shell corren en bash 3.2 (macOS): nada de `mapfile` ni arrays asociativos. (criterio)
+- Un comando lanzado dentro de un `while read … done < archivo` (o `<<<`) lleva la entrada redirigida (`< /dev/null`):
+  si la lee, se come los elementos que quedan del bucle. Su test usa al menos dos elementos. (criterio)
+- Una carpeta con nombre fijo en un directorio compartido (`$TMPDIR`, `/tmp`) es por usuario, se crea con permisos 700
+  y se rechaza si ya existe como symlink o de otro usuario; los archivos sueltos, con `mktemp`. (criterio)
+- Un script que hace commits se prueba con los ganchos del proyecto instalados (`commit-msg` estricto incluido): un
+  commit con `--no-verify` en el test esconde el rechazo que tendrá de verdad. (criterio)
+- Cada cambio en un gancho o un script lleva su caso en los tests; un caso que espera un fallo comprueba el motivo,
+  no solo el código de salida. Vale para los scripts propios del proyecto. (criterio)
+- Los scripts de `.claude/gw/scripts/` se prueban en el repo del flujo y no se editan aquí: un cambio va al flujo
+  como propuesta, con `gw-harvest` (check: `config-guard.py` pregunta antes de editarlos). (criterio)
+- Un gancho que pregunta o bloquea se revisa **probando cómo saltárselo**: envoltorios con opciones que llevan valor
+  (`sudo -u X`, `sudo -uX`, `env -u X`, `nice -n 5`, `timeout 5`, `xargs -I{}`), el destino de los copiadores (`cp`,
+  `install`, `rsync`, `dd of=`, `-t DIR`), una carpeta antecesora de la protegida y una ruta relativa o con `..`; y
+  los falsos positivos habituales (leer o copiar **desde** la carpeta, `git restore --staged`). Cada forma, su caso.
+  (criterio)
+- `pkill -f <patrón>` (y `pgrep -f`) casa también con la orden que lo lanza cuando el patrón va en ella
+  (`bash -c "… pkill -f servidor"`), y la mata: un pidfile, `pgrep -x` o un patrón que no se case a sí mismo
+  (`[s]ervidor`). (criterio)
+- Un comando externo lanzado con tiempo límite (`timeout`, un plazo propio) mata **su grupo de procesos**, no solo al
+  proceso directo: los hijos que deja vivos retienen la salida y el bloqueo. Se lanza como líder de grupo
+  (`start_new_session`, `setsid`) y al vencer se envía la señal al grupo. (criterio)
+- Un runbook o encargo que sigue una tarea programada (una sesión sin persona delante) se revisa como código, aunque
+  case con `content`: lo que dice se ejecuta tal cual. (criterio)
+
+## Tests
+
+- Un componente que los tests sustituyen por un doble (fake, mock, stub) tiene también una prueba de humo contra el
+  real: arrancarlo y hacer una llamada de punta a punta. Se omite en local si falta el real y falla en el CI.
+  (criterio)
+- Un test no depende de que exista lo que comprueba (`if (existsSync(...))`, `if os.path.exists(...)`): si falta, el
+  test falla o se marca pendiente a la vista, no se apaga en silencio. (criterio)
+
+## Traído de otro repo: se adapta a los contratos de este
+
+- El código, los scripts o las reglas traídos de otro repositorio se comprueban contra **este** repo, no contra el
+  original: formatos, rutas, extensiones de archivo, patrones de nombres, constantes, claves de configuración e
+  identificadores de tarea. (criterio)
+- Lo que viene de un proyecto que sube de otra forma (directo a la rama protegida, o por pull request) se adapta a
+  cómo sube este a `main`. (criterio)
+- Una tabla o un ejemplo de una guía que lee un script lo lee ese script en un test. (criterio)
+- El código que lee lo que escribe un agente o una persona (la línea del selector, trailers, respuestas a preguntas)
+  lleva al menos un test con una muestra real, copiada de una transcripción o de la bitácora. (criterio)
+
+## Invariantes
+
+- Un cambio que toca una invariante (un dato en un solo sitio, un orden de pasos, un estado que no puede darse) se
+  revisa buscando **los demás sitios que la sostienen**: el cambio no debe romper ninguno. (criterio)
+
+## Navegadores
+
+<!-- Opcional: solo para proyectos web; bórralo si no aplica. -->
+
+- Lo que se mira en varios navegadores y en el móvil: APIs que no están en Safari, `100vh` (barra del navegador
+  móvil), foco y teclado. (criterio)
+
+## Idiomas visibles
+
+- Si `languages.ui` (`.claude/gw.json`) no está vacío, todo texto nuevo que vea un usuario existe en cada uno de esos
+  idiomas (etiquetas, textos alternativos, títulos de página, mensajes), y una traducción es de verdad, no el mismo
+  texto. (criterio)
+
+## Ficha de tarea
+
+<!-- Solo si `taskRecord.enabled` es true en `.claude/gw.json`. -->
+
+- El gancho `commit-msg` comprueba la forma de la ficha y de las entradas del decision log; aquí se lee la calidad: el
+  `Why` es la razón real (no repite el cambio), las `Alternatives` son reales (opciones que se sopesaron, no relleno),
+  el `Change log` de la ficha coincide con el diff y cada casilla de `Acceptance` nombra un test que de verdad la
+  comprueba (se lee el test, no solo el nombre). (criterio)
+
+## Reglas del proyecto
+
+<!-- Las rellena el proyecto: lo que nunca se publica, reglas del dominio, accesibilidad, rendimiento, seguridad. -->
