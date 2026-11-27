@@ -47,7 +47,7 @@ Lo decide: tests. Invariante: 3.
 - [ ] MAP-4 Comprobador de mapas contra el canon, desde `map-generator/comprobar.py`.
 - [ ] MAP-5 Equivalencia con el `map-generator/` de WMF sobre `Helek_World.map` (sus 11 archivos de test como
   oráculo).
-- [ ] PCK-8 Barrido de leves de `gworld/pack.py` (retro W1, Q-24): `canon.path` `"."`/`"sub/.."` rechazado;
+- [x] PCK-8 Barrido de leves de `gworld/pack.py` (retro W1, Q-24): `canon.path` `"."`/`"sub/.."` rechazado;
   FIFO/socket como `PackError`; mensaje «fuera del canon» y nombres no UTF-8 como `PackError` en `canon_digest`;
   `RecursionError` de `validate` con su propio error, no `bad_json`. Los leves de `gworld/canon.py` siguen aparte.
 

@@ -153,6 +153,54 @@ class PackTest(unittest.TestCase):
         self.addCleanup(f.chmod, 0o644)
         self.assertEqual(code_of(self, self.d).code, "unreadable")
 
+    def test_canon_path_root_rejected(self):
+        for cp in (".", "sub/.."):
+            with self.subTest(cp=cp):
+                make(self.d, canon_path=cp, sha="sha256:" + "0" * 64)
+                err = code_of(self, self.d)
+                self.assertEqual(err.code, "canon_outside")
+                self.assertIn("raíz del paquete", str(err))
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "sin mkfifo")
+    def test_fifo_in_canon(self):
+        make(self.d)
+        os.mkfifo(self.d / "canon" / "fifo")
+        with self.assertRaises(PackError) as cm:
+            canon_digest(self.d / "canon")
+        self.assertEqual(cm.exception.code, "canon_special")
+        self.assertIn("especial", str(cm.exception))
+        with self.assertRaises(PackError) as cm:
+            canon_digest(self.d / "canon" / "fifo")
+        self.assertEqual(cm.exception.code, "canon_special")
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "sin symlinks")
+    def test_outside_message_says_canon(self):
+        make(self.d)
+        (self.d / "otro.md").write_bytes(b"x")
+        (self.d / "canon" / "l.md").symlink_to(self.d / "otro.md")
+        with self.assertRaises(PackError) as cm:
+            canon_digest(self.d / "canon")
+        self.assertEqual(cm.exception.code, "canon_outside")
+        self.assertIn("fuera del canon", str(cm.exception))
+        self.assertNotIn("fuera del paquete", str(cm.exception))
+
+    def test_non_utf8_name(self):
+        make(self.d)
+        try:
+            (self.d / "canon" / os.fsdecode(b"\xff.md")).write_bytes(b"x")
+        except OSError:
+            self.skipTest("el sistema de archivos no admite nombres no UTF-8")
+        with self.assertRaises(PackError) as cm:
+            canon_digest(self.d / "canon")
+        self.assertEqual(cm.exception.code, "canon_name")
+
+    def test_validate_recursion_own_code(self):
+        make(self.d)
+        with mock.patch("gworld.pack.validate", side_effect=RecursionError):
+            err = code_of(self, self.d)
+        self.assertEqual(err.code, "too_deep")
+        self.assertIn("demasiado anidado", str(err))
+
     def test_canon_path_nul(self):
         make(self.d, canon_path="canon\0x", sha="sha256:" + "0" * 64)
         self.assertEqual(code_of(self, self.d).code, "canon_outside")

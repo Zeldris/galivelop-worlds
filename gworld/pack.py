@@ -1,7 +1,8 @@
 """Carga de un paquete de mundo: ``load_pack(path) -> WorldPack`` (PCK-4, invariante 8).
 
 No escribe nada. Fallos como ``PackError`` con ``code`` estable: ``no_manifest``, ``bad_json``,
-``schema``, ``canon_outside``, ``canon_missing``, ``canon_hash``, ``unreadable`` (error de E/S).
+``schema``, ``canon_outside``, ``canon_missing``, ``canon_hash``, ``canon_special`` (FIFO, socket o dispositivo en el canon),
+``canon_name`` (nombre no UTF-8), ``too_deep`` (JSON demasiado anidado), ``unreadable`` (error de E/S).
 """
 
 import hashlib
@@ -69,6 +70,8 @@ def canon_digest(path: "str | os.PathLike") -> str:
     p = Path(path)
     if p.is_file():
         return "sha256:" + hashlib.sha256(_read(p)).hexdigest()
+    if p.exists() and not p.is_dir():
+        raise PackError("canon_special", f"el canon {p} no es un archivo regular ni un directorio")
     base = p.resolve()
     entries: list[tuple[bytes, Path]] = []
     def onerror(e: OSError) -> None:
@@ -81,10 +84,15 @@ def canon_digest(path: "str | os.PathLike") -> str:
         for name in filenames:
             f = Path(dirpath, name)
             if not f.is_file():
+                if f.exists():
+                    raise PackError("canon_special", f"el canon contiene un archivo especial (FIFO, socket o dispositivo): {f}")
                 continue
             if f.is_symlink() and not _inside(f.resolve(), base):
-                raise PackError("canon_outside", f"el archivo del canon {f} apunta fuera del paquete")
-            rel = f.relative_to(p).as_posix().encode("utf-8")
+                raise PackError("canon_outside", f"el archivo del canon {f} apunta fuera del canon")
+            try:
+                rel = f.relative_to(p).as_posix().encode("utf-8")
+            except UnicodeEncodeError as e:
+                raise PackError("canon_name", f"nombre de archivo no UTF-8 en el canon: {str(f)!r}") from e
             entries.append((rel, f))
     entries.sort(key=lambda e: e[0])
     h = hashlib.sha256()
@@ -109,7 +117,7 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
     try:
         errors = validate(manifest, load_schema("gworld.pack/0"))
     except RecursionError as e:
-        raise PackError("bad_json", "pack.json demasiado anidado") from e
+        raise PackError("too_deep", "pack.json demasiado anidado para validarlo") from e
     if errors:
         desc = "; ".join(f"{e.path or '/'} {e.code} {e.params}" for e in errors)
         raise PackError("schema", f"pack.json no cumple gworld.pack/0: {desc}", errors)
@@ -125,6 +133,8 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
         if Path(rel).is_absolute() or Path(rel).drive:
             raise PackError("canon_outside", f"canon.path {rel!r} es absoluta")
         canon = root / rel
+        if os.path.normpath(root_r / rel) == str(root_r):
+            raise PackError("canon_outside", f"canon.path {rel!r} es la raíz del paquete")
         outside = not _inside(Path(os.path.normpath(root_r / rel)), root_r) or not _inside(canon.resolve(), root_r)
     except (ValueError, OSError) as e:
         raise PackError("canon_outside", f"canon.path {rel!r} no se puede resolver: {e}") from e
