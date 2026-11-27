@@ -51,6 +51,8 @@ Fuera: comprobación contra el canon (MAP-4) y equivalencia con WMF (MAP-5).
   empate de longitud: gana la celda previa de id menor. Consulta de celda o zona inexistente: `unknown_cell` /
   `unknown_zone`. Dos celdas con la misma zona repetida en `zones` cuentan como `duplicate_layer`.
 - 2026-11-27: `import_map` importa `check_map` dentro de la función (import circular con `MapError`).
+- 2026-11-27: revisión de bloque: `path` lleva un conjunto de celdas cerradas y solo desempata si la vecina ya tiene
+  previa (con `unitKm` 0 o centros iguales daba `KeyError` y podía ciclar); 3 leves a `docs/records/pending.md`.
 
 ## Verification
 

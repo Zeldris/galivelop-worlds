@@ -170,18 +170,19 @@ class Topology:
         ok = (lambda i: True) if passable is None else (lambda i: bool(passable(self._cells[i])))
         if not ok(a) or not ok(b):
             return None
-        best, prev, heap = {a: 0.0}, {}, [(0.0, a)]
+        best, prev, heap, done = {a: 0.0}, {}, [(0.0, a)], set()
         while heap:
             d, c = heapq.heappop(heap)
-            if d > best[c]:
+            if c in done:
                 continue
+            done.add(c)
             if c == b:
                 break
             for n in sorted(self._cells[c]["neighbours"]):
-                if not ok(n):
+                if n in done or not ok(n):
                     continue
                 nd = d + self.distance_km(c, n)
-                if nd < best.get(n, math.inf) or (nd == best[n] and c < prev[n]):
+                if nd < best.get(n, math.inf) or (nd == best[n] and n in prev and c < prev[n]):
                     best[n], prev[n] = nd, c
                     heapq.heappush(heap, (nd, n))
         if b not in best:

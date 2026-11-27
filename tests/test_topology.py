@@ -185,6 +185,14 @@ class TopologyTest(unittest.TestCase):
         # 0-1-3 y 0-2-3 miden 22 km los dos: gana el de la celda previa con id menor (1).
         self.assertEqual(self.t.path(0, 3), ([0, 1, 3], 22.0))
 
+    def test_camino_con_aristas_de_coste_cero(self):
+        # unitKm 0 (el esquema lo admite): todo mide 0 km; antes, el desempate leia prev del origen (KeyError).
+        d = small()
+        d["geometry"]["unitKm"] = 0
+        route, km = Topology(d).path(0, 4)
+        self.assertEqual((route[0], route[-1], km), (0, 4, 0.0))
+        self.assertEqual(route, [0, 1, 3, 4])
+
     def test_camino_con_celdas_transitables(self):
         self.assertEqual(self.t.path(0, 3, lambda c: c["id"] != 1), ([0, 2, 3], 22.0))
         self.assertEqual(self.t.path(0, 3, lambda c: c["height"] >= 20), ([0, 1, 3], 22.0))
