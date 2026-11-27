@@ -133,7 +133,7 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
         if Path(rel).is_absolute() or Path(rel).drive:
             raise PackError("canon_outside", f"canon.path {rel!r} es absoluta")
         canon = root / rel
-        if os.path.normpath(root_r / rel) == str(root_r):
+        if os.path.normpath(root_r / rel) == str(root_r) or canon.resolve() == root_r:
             raise PackError("canon_outside", f"canon.path {rel!r} es la raíz del paquete")
         outside = not _inside(Path(os.path.normpath(root_r / rel)), root_r) or not _inside(canon.resolve(), root_r)
     except (ValueError, OSError) as e:

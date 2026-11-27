@@ -93,6 +93,17 @@ class PackTest(unittest.TestCase):
         make(self.d / "pk", canon_files={}, canon_path="canon", sha="sha256:" + "0" * 64)
         self.assertEqual(code_of(self, self.d / "pk").code, "canon_outside")
 
+    @unittest.skipUnless(hasattr(os, "symlink"), "sin symlinks")
+    def test_canon_symlink_to_root(self):
+        try:
+            os.symlink(".", self.d / "c", target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("el SO no permite symlinks")
+        make(self.d, canon_path="c", sha="sha256:" + "0" * 64)
+        err = code_of(self, self.d)
+        self.assertEqual(err.code, "canon_outside")
+        self.assertIn("es la raíz del paquete", str(err))
+
     def test_licence_only_conditions(self):
         make(self.d, licence={"conditions": "x"})
         e = code_of(self, self.d)

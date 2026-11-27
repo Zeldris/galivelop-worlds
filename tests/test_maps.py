@@ -2,8 +2,10 @@ import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from gworld.maps import FmgImporter, MapError, MapImporter
+from gworld._delaunay import _angle
+from gworld.maps import FmgImporter, MapError, MapImporter, _voronoi
 from gworld.schema import validate
 from gworld.schemas import load_schema
 
@@ -131,6 +133,25 @@ class FmgImportTest(unittest.TestCase):
                 FmgImporter().import_map(p)
         self.assertEqual(cm.exception.code, "malformed")
 
+
+    def test_error_aritmetico_es_malformed(self):
+        with mock.patch("gworld.maps.triangulate", side_effect=ZeroDivisionError("division by zero")):
+            with self.assertRaises(MapError) as cm:
+                FmgImporter().import_map(FIXTURE)
+        self.assertEqual(cm.exception.code, "malformed")
+        self.assertIn("ZeroDivisionError", str(cm.exception))
+
+
+class GeometriaTest(unittest.TestCase):
+    def test_circuncentro_como_fmg(self):
+        # Circuncentro exacto (7, 3.5): 1372/196 da 7, pero FMG hace Math.floor(1/D * X) y (1/196)*1372 < 7.
+        _, _, _, verts = _voronoi([[0, 0], [0, 7], [14, 0]], [])
+        self.assertEqual(verts, {0: [6, 3]})
+
+    def test_angulo_en_el_circuncentro(self):
+        # Delaunator daria NaN; aqui 0, sin ZeroDivisionError.
+        self.assertEqual(_angle(0, 0), 0.0)
+        self.assertEqual(_angle(0.0, -0.0), 0.0)
 
 @unittest.skipUnless(REAL.exists(), "sin el mapa real de WMF")
 class RealMapSmoke(unittest.TestCase):

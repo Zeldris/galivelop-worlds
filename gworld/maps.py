@@ -107,8 +107,9 @@ def _voronoi(points, boundary):
             if d == 0:
                 raise MapError("malformed", "rejilla degenerada: triangulo sin area")
             a2, b2, c2 = ax * ax + ay * ay, bx * bx + by * by, cx * cx + cy * cy
-            verts[t] = [math.floor((a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d),
-                        math.floor((a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d)]
+            # Como getCircumcenter de FMG: 1/D por el numerador, no numerador / D (redondean distinto).
+            verts[t] = [math.floor((1 / d) * (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by))),
+                        math.floor((1 / d) * (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)))]
     return cell_v, cell_c, edge, verts
 
 
@@ -196,7 +197,7 @@ class FmgImporter:
             raise MapError("malformed", f"{p.name} no es texto UTF-8: no parece un .map de FMG") from e
         try:
             doc = self._build(_records(text), p.name, "sha256:" + hashlib.sha256(raw).hexdigest())
-        except (KeyError, IndexError, TypeError, ValueError, AttributeError) as e:
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError, ArithmeticError) as e:
             raise MapError("malformed", f"{p.name}: registros incoherentes ({type(e).__name__}: {e})") from e
         errors = validate(doc, load_schema("gworld.map/0"))
         if errors:

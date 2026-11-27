@@ -21,4 +21,10 @@ Lo que queda abierto; la bitácora solo apunta aquí. Se añade y se quita en es
 - Leve (revisión de bloque W1): `gworld/canon.py` `_FENCE` acepta info string con comilla invertida y `# #` da un encabezado `#`.
 - Leve (revisión de bloque W1): `gworld/canon.py` filtra `.md` distinguiendo mayúsculas y `canon_digest` hashea todo; un `.MD` entra en la huella sin dar hechos.
 - Leve (revisión de bloque W1): `tests/test_tarkor_pack.py` fija 34 archivos y exige un hecho por `.md`; un `.md` vacío en WMF lo rompe.
+- Leve (revisión de bloque MAP): `gworld/maps.py` da `parent: region:N` a una provincia cuyo estado está borrado o es el 0; filtrar con `known` como `capitalOf`.
+- Leve (revisión de bloque MAP): `gworld/pack.py` da `canon_special` en vez de `canon_outside` a un symlink del canon que apunta fuera a un FIFO o dispositivo.
+- Leve (revisión de bloque MAP): `gworld/maps.py` `_MIN_RECORDS = 45` cuando FMG guarda 46 (o explicar por qué el último es opcional); `_C_RIVER` sin uso.
+- Leve (revisión de bloque MAP): `gworld/maps.py` tumba el mapa entero por una ruta de grupo no slug, una ruta de menos de 2 puntos o un burgo sin `name`.
+- Leve (revisión de bloque MAP): `tests/test_maps.py` `code_of` solo mira `.code`; los tests de `malformed` deben comprobar también el mensaje.
+- Leve (revisión de bloque MAP): `tests/test_maps.py` fija la ruta del mapa real en `/home/user/World-Maker-Fantasy`; leerla de una variable de entorno y apuntar en el plan quién lo comprueba.
 - Repo Galivelop-workflow (retro W1, Q-18/Q-19/Q-21): `ci-status.py --wait` para esperar el CI en segundo plano; `gw-orchestrate-dealer` sin envolver `/code-review` en un `gw-reviewer` Opus; `check.sh`/`ci-local.py` con los tests en cada versión de Python de la matriz instalada en local (el CI rojo de PCK-4 por 3.11/3.12).

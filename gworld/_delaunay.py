@@ -37,6 +37,11 @@ def _circum(ax, ay, bx, by, cx, cy):
 
 
 def _angle(dx, dy):
+    if dx == 0 and dy == 0:
+        # Punto justo en el circuncentro de la semilla (Delaunator daria NaN): angulo 0, cubo 0 del hash del casco,
+        # determinista y sin ZeroDivisionError. Un punto ahi estaria dentro del triangulo semilla y no ve ninguna
+        # arista del casco, asi que se salta como los casi duplicados.
+        return 0.0
     p = dx / (abs(dx) + abs(dy))
     return (3 - p if dy > 0 else 1 + p) / 4
 
