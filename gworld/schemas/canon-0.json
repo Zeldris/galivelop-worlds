@@ -1,0 +1,41 @@
+{
+  "$schema": "gart-subset",
+  "title": "gworld.canon/0",
+  "description": "Indice de hechos del canon (solo lectura). Unicidad de ids y que cada huella cuadre con el texto son comprobaciones de PCK-4 y PCK-5, no de este esquema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "pack", "facts"],
+  "properties": {
+    "kind": {"const": "gworld.canon/0"},
+    "pack": {
+      "description": "PackRef: id, version y huella del paquete.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "sha256"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$", "maxLength": 64},
+        "version": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "file", "headings", "text", "sha256"],
+        "properties": {
+          "id": {
+            "description": "Id derivado (ADR 0005) de archivo, ruta de encabezados y huella del texto: 'fact:' y 16 a 64 hex en minuscula.",
+            "type": "string",
+            "pattern": "^fact:[0-9a-f]{16,64}$"
+          },
+          "file": {"type": "string", "minLength": 1, "description": "Ruta relativa."},
+          "headings": {"type": "array", "items": {"type": "string"}},
+          "text": {"type": "string", "description": "Texto normalizado."},
+          "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

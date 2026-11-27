@@ -14,4 +14,7 @@ dependencies = []
 [project.optional-dependencies]
 
 [tool.setuptools]
-packages = ["gworld"]
+packages = ["gworld", "gworld.schemas"]
+
+[tool.setuptools.package-data]
+"gworld.schemas" = ["*.json"]
