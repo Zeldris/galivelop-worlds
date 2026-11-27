@@ -112,7 +112,9 @@ class PackTest(unittest.TestCase):
 
     def test_deeply_nested_json(self):
         make(self.d, raw='{"rules":' + "[" * 100000 + "]" * 100000 + "}")
-        self.assertEqual(code_of(self, self.d).code, "bad_json")
+        err = code_of(self, self.d)
+        self.assertEqual(err.code, "bad_json")
+        self.assertIn("demasiado anidado", str(err))
 
     @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "root lee igual")
     def test_unreadable_canon_file(self):

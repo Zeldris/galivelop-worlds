@@ -99,12 +99,14 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except OSError as e:
         raise PackError("unreadable", f"no se puede leer pack.json: {e}") from e
-    except (ValueError, UnicodeDecodeError, RecursionError) as e:
+    except RecursionError as e:
+        raise PackError("bad_json", "pack.json demasiado anidado") from e
+    except (ValueError, UnicodeDecodeError) as e:
         raise PackError("bad_json", f"pack.json no es JSON válido: {e}") from e
     try:
         errors = validate(manifest, load_schema("gworld.pack/0"))
     except RecursionError as e:
-        raise PackError("schema", "pack.json demasiado anidado para validarlo") from e
+        raise PackError("bad_json", "pack.json demasiado anidado") from e
     if errors:
         desc = "; ".join(f"{e.path or '/'} {e.code} {e.params}" for e in errors)
         raise PackError("schema", f"pack.json no cumple gworld.pack/0: {desc}", errors)
