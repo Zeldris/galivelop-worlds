@@ -8,10 +8,10 @@
 
 | Campo | Valor |
 |---|---|
-| **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | W0 cerrada y fusionada en `main` (PR #1, `ea214e2`, CI en verde, fusión confirmada por la persona el 2026-11-27). W1 (versión 0.1): PCK-1 a PCK-7 hechos |
-| **Último punto estable** | `chore(W1): aplicar la retro de W1 decidida por la persona` |
-| **Siguiente paso** | PR #2 de 0.1 a `main` abierto (marca de revisión `e02a1b6`); esperar el CI en verde y la confirmación de la persona para fusionar; luego la bitácora y `/clear` |
+| **Rama** | `claude/release-0.1.0` |
+| **Fase / tarea** | W1 (versión 0.1) fusionada en `main` (PR #2, `6d2d4e7`). Publicando 0.1.0: versión subida y notas en `docs/releases/v0.1.0.md` |
+| **Último punto estable** | `chore(W1): versión 0.1.0 y notas de la release` |
+| **Siguiente paso** | La persona autorizó el 2026-11-27 omitir la retro de este PR, fusionarlo con el CI en verde y publicar `v0.1.0`. Fusionado: etiqueta y release sobre la fusión; después vaciar «Para la próxima publicación» y seguir con 0.2 (MAP-1) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
