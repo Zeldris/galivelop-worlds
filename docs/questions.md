@@ -230,35 +230,45 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 
 ## Q-26
 - Refs: MAP-5
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Caminos: WMF (consultar.py:321-323) va solo por tierra por defecto; Topology.path va por todas las celdas salvo que se pase passable. a) por defecto solo tierra, como WMF; b) por defecto todas y MAP-5 pasa el filtro de tierra.
 - Recommendation: b) Mantener passable=None = todas las celdas (sirve también para rutas por mar) y que MAP-5 pase passable de tierra al comparar con WMF.
+- Answer: b
+- Answered: 2026-11-27
 
 ## Q-27
 - Refs: MAP-4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: ¿Dónde viven las reglas de mapa de un mundo? a) archivo estructurado propio del paquete (gworld.maprules/0) con fuente = id de hecho; b) gworld lee lore.json/canon.json de WMF en su formato.
 - Recommendation: a) Archivo de reglas de mapa en el paquete (artefacto nuevo gworld.maprules/0, citado desde el manifiesto), cada regla con su fuente como id de hecho; el de Tarkor se genera con un script que lee lore.json y canon.json de WMF en solo lectura.
+- Answer: a
+- Answered: 2026-11-27
 
 ## Q-28
 - Refs: MAP-4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: ¿MAP-4 incluye las medidas de canon.json (medir.py: área, envolvente, distancia ±3 %)? a) sí; b) no, tarea aparte MAP-6.
 - Recommendation: a) Sí: MAP-4 cubre lore.json y las medidas de canon.json (área, envolvente y distancia con tolerancia, portando lo necesario de geometria.py); el oráculo de MAP-5 incluye los tests de medir.
+- Answer: a
+- Answered: 2026-11-27
 
 ## Q-29
 - Refs: MAP-4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: ¿Cómo citan las reglas regiones, provincias y continentes? a) por id de zona; b) por nombre, como WMF.
 - Recommendation: a) Por id (region:18, landmass:2), sin ambigüedad entre capas y estable; el conversor de Tarkor resuelve los nombres y el informe muestra id y nombre.
+- Answer: a
+- Answered: 2026-11-27
 
 ## Q-30
 - Refs: MAP-4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Tipos de regla: a) portar los 11 tipos tal cual, con las direcciones que admite WMF (solo norte-sur, oeste, sur); b) generalizar direcciones.
 - Recommendation: b) Generalizar las direcciones (norte/sur/este/oeste en todos los tipos que tienen eje o lado): cuesta poco y un segundo mundo no depende de la geografía de Tarkor.
+- Answer: b
+- Answered: 2026-11-27

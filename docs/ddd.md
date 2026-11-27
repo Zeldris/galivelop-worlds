@@ -171,6 +171,9 @@ por el comprobador de canon.
     Celdas con id entero (su índice en el origen) y zonas con id `<capa>:<índice>` (`region:17`); la geometría es
     una lista de vértices compartidos que cada celda cita por índice, en unidades del lienzo con `unitKm`. Que las
     referencias existan y el grafo sea conexo lo comprueba MAP-3, no el esquema.
+  - `gworld.maprules/0`: las reglas de mapa de un mundo (topología, orden y medidas con tolerancia) contra un mapa
+    concreto (huella de su origen), con zonas y lugares por id y su fuente en el canon; no son `Rule`: no transforman
+    estado, son condiciones que el mapa cumple (MAP-4).
   - `gworld.state/0`: la foto del estado en un turno, con la huella del paquete, la semilla y el reloj.
   - `gworld.canon/0`: el índice de hechos (id derivado, texto normalizado, fuente y huella).
   - `gworld.check/0`: el veredicto de una narración (citados, contradicciones y desconocidos, con ids), con la
