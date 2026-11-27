@@ -33,7 +33,7 @@ Lo decide: tests. Invariantes: 4, 5, 8, 9 y 13.
 - [x] PCK-4 `load_pack(path) -> WorldPack`: estructura, licencia obligatoria, huella del canon (invariante 8).
 - [x] PCK-5 Lector del canon de solo lectura: troceo por encabezados y ids de hecho derivados (ADR 0005; invariantes
   4 y 5).
-- [ ] PCK-6 Mundo de ejemplo mínimo, sin términos de Tarkor, y el `grep` del invariante 9.
+- [x] PCK-6 Mundo de ejemplo mínimo, sin términos de Tarkor, y el `grep` del invariante 9.
 - [ ] PCK-7 Paquete de Tarkor de prueba que lee `docs/rpgtarkor/` de WMF sin escribir (D11) y exporta
   `gworld.canon/0`.
 

@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | W0 cerrada y fusionada en `main` (PR #1, `ea214e2`, CI en verde, fusión confirmada por la persona el 2026-11-27). W1 (versión 0.1) en curso: PCK-1 a PCK-5 hechos |
-| **Último punto estable** | `feat(PCK-5): lector del canon de solo lectura con ids de hecho derivados` |
-| **Siguiente paso** | W1: PCK-6 (mundo de ejemplo mínimo sin términos de Tarkor y grep del invariante 9), repartido a un `gw-worker` con `sonnet` (`docs/plan.md`) |
+| **Fase / tarea** | W0 cerrada y fusionada en `main` (PR #1, `ea214e2`, CI en verde, fusión confirmada por la persona el 2026-11-27). W1 (versión 0.1) en curso: PCK-1 a PCK-6 hechos |
+| **Último punto estable** | `feat(PCK-6): mundo de ejemplo mínimo y grep del invariante 9` |
+| **Siguiente paso** | W1: PCK-7 (paquete de Tarkor de prueba que lee `docs/rpgtarkor/` de WMF sin escribir, D11), repartido a un `gw-worker` (`docs/plan.md`) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
