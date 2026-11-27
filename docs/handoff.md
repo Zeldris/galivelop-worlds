@@ -11,7 +11,7 @@
 | **Rama** | `claude/release-0.1.0` |
 | **Fase / tarea** | W1 (versión 0.1) fusionada en `main` (PR #2, `6d2d4e7`). Publicando 0.1.0: versión subida y notas en `docs/releases/v0.1.0.md` |
 | **Último punto estable** | `chore(W1): versión 0.1.0 y notas de la release` |
-| **Siguiente paso** | PR de `claude/release-0.1.0` a `main`; con CI verde y confirmación de la persona, fusionar, etiqueta y release `v0.1.0` sobre la fusión con esas notas; después vaciar «Para la próxima publicación» y seguir con 0.2 (MAP-1) |
+| **Siguiente paso** | La persona autorizó el 2026-11-27 omitir la retro de este PR, fusionarlo con el CI en verde y publicar `v0.1.0`. Fusionado: etiqueta y release sobre la fusión; después vaciar «Para la próxima publicación» y seguir con 0.2 (MAP-1) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
