@@ -82,6 +82,9 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 
 - 2026-11-27: contrato escrito por la sesión principal con Q-26 a Q-30 contestadas (recomendaciones aceptadas).
   `comprobar.py` no lee `canon.json`: las reglas son de `lore.json` y las medidas de `medir.py`; aquí van juntas.
+- 2026-11-27: paso 2 hecho: `gworld/geometry.py` con `rings`, `polygons`, `area_km2` y `extent_km` (sobre el doc, en km);
+  anillos en orden del menor vértice de salida, cada uno por la salida de mayor índice (como WMF), exteriores por
+  `(min punto, longitud)`; dos celdas que solo comparten un vértice salen en un único anillo en ocho.
 
 ## Verification
 
