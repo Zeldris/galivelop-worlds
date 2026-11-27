@@ -18,3 +18,4 @@ Lo que queda abierto; la bitácora solo apunta aquí. Se añade y se quita en es
 - Leve (revisión de bloque W1): `canon_digest` trata una ruta que no es archivo ni directorio (FIFO, socket) como directorio vacío; dar `PackError`.
 - Leve (revisión de bloque W1): en `canon_digest`, el mensaje de `canon_outside` dice «fuera del paquete» cuando es «fuera del canon», y un nombre de archivo no UTF-8 da `UnicodeEncodeError` en vez de `PackError`.
 - Leve (revisión de bloque W1): `gworld/schema.py:62` usa `token.isdigit()`, verdadero para `'²'`; usar `token.isascii() and token.isdigit()`. Y `KIND_ID_RE` acepta puntos dobles o al final (`gworld.pack./0`); ajustarlo si gart lo permite.
+- El test de Tarkor (`tests/test_tarkor_pack.py`) se salta en CI (sin WMF); se comprueba en local con `GW_WMF_DIR=<ruta de World-Maker-Fantasy>`.
