@@ -3,6 +3,9 @@
 Reparto, confirmado el 2026-11-26 (Q-14 a Q-16), de los hitos de [`ddd.md` §7](ddd.md#7-escalera-de-hitos) en versiones. Este archivo dice qué está
 implementado; la bitácora, qué se está haciendo. Una tarea se marca `[x]` en el commit que la cierra.
 
+**`## Files` de una tarea:** un esquema nuevo lista también `gworld/schemas/__init__.py`; una herramienta nueva,
+`tools/__init__.py` (retro 0.2, Q-41).
+
 **Ids:** un prefijo por hito, con el patrón `taskId` de `.claude/gw.json` (`[A-Z]{2,5}-\d+`): `PCK` paquete y
 canon, `CHK` comprobador, `RAG` recuperación, `MAP` mapas, `VIV` mundo vivo, `NAR` Narrador.
 
@@ -62,6 +65,10 @@ Lo decide: el GVE. Invariantes: 6 y 7.
   `conflict` y `unknown` con la cita.
 - [ ] CHK-4 Interfaz `Judge` opcional, apuntada en `gworld.check/0` (D8).
 - [ ] CHK-5 Batería del GVE y su línea base.
+- [ ] MAP-6 Barrido de leves de `gworld/maps.py` (retro 0.2, Q-45): `parent: region:N` de una provincia con estado
+  borrado o 0, filtrado con `known` como `capitalOf`; `_MIN_RECORDS = 45` frente a los 46 de FMG (o el porqué) y
+  `_C_RIVER` sin uso; una ruta de grupo no slug, una ruta de menos de 2 puntos o un burgo sin `name` no tumban el
+  mapa entero. Los leves de `gworld/topology.py` siguen aparte.
 
 ## 0.4 — W3 RAG
 
