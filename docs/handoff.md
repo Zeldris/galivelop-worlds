@@ -9,22 +9,22 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `claude/release-0.1.0` |
-| **Fase / tarea** | W1 (versión 0.1) fusionada en `main` (PR #2, `6d2d4e7`). Publicando 0.1.0: versión subida y notas en `docs/releases/v0.1.0.md` |
-| **Último punto estable** | `chore(W1): versión 0.1.0 y notas de la release` |
-| **Siguiente paso** | La persona autorizó el 2026-11-27 omitir la retro de este PR, fusionarlo con el CI en verde y publicar `v0.1.0`. Fusionado: etiqueta y release sobre la fusión; después vaciar «Para la próxima publicación» y seguir con 0.2 (MAP-1) |
+| **Fase / tarea** | 0.1.0 publicada el 2026-11-27: PR #3 fusionado (`7e03ed1`), etiqueta y release `v0.1.0`. Sin tarea en curso |
+| **Último punto estable** | `docs(W1): 0.1.0 publicada` |
+| **Siguiente paso** | Empezar 0.2 (MAP-1) desde esta rama, que lleva esta bitácora por delante de `main` |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
 
-0.1 (W1 Paquete y canon): PCK-1 a PCK-7 de `docs/plan.md`
+(nada todavía)
 
 ## Hecho (5 últimas)
 
-1. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
-2. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
-3. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
-4. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
-5. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
+1. 2026-11-27 — 0.1.0 publicada: release `v0.1.0` sobre `7e03ed1` (PR #3, CI en verde; retro omitida y fusión autorizadas por la persona).
+2. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
+3. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
+4. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
+5. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
 
 ## Pendiente
 
