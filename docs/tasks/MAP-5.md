@@ -28,7 +28,7 @@ Diferencias aceptadas: WMF lanza `ValueError` con una zona o tipo desconocido (g
 
 Pasos, cada uno con su commit:
 
-1. **Fixtures e import.** `tests/fixtures/helek/`: `helek.json` copiado de `map-generator/mundo/` de WMF y
+1. **[hecho] Fixtures e import.** `tests/fixtures/helek/`: `helek.json` copiado de `map-generator/mundo/` de WMF y
    `helek.gworld.json` (el `gworld.map/0` que da `FmgImporter` sobre `Helek_World.map`), con un `README.md` de
    procedencia (commit de WMF, huellas, licencia) y un script que lo regenera. Test cruzado en el CI: cada celda
    tiene en `helek.gworld.json` la misma altura, región, provincia y continente que en `helek.json`, y los mismos
@@ -57,6 +57,7 @@ Pasos, cada uno con su commit:
 
 ## Change log
 
+- 2026-11-27: paso 1 hecho: `tests/fixtures/helek/` (helek.json, helek.gworld.json, regen.py, README), `tests/test_helek_parity.py` e `ImportReview`/`FmgImporter.import_with_review` en `gworld/maps.py` (40 marcadores, 610 burgs borrados). Diferencia con WMF: el lugar 614 (Nabieus) esta movido en `helek.json`.
 - 2026-11-27: Q-31 a Q-34 contestadas; alcance, pasos y aceptación fijados. `helek.gworld.json` también va a fixtures para que el CI pruebe reglas y medidas.
 - 2026-11-27: ficha abierta con el inventario de los 11 tests y las preguntas Q-31 a Q-34.
 

@@ -5,6 +5,7 @@ que valida contra su esquema. El mismo archivo da el mismo documento. Fallos com
 ``unreadable`` (error de E/S), ``malformed`` (no es un .map de FMG, truncado o con registros ilegibles),
 ``unsupported_version`` (no es la 1.137.6), ``mismatch`` (las celdas reconstruidas no cuadran con lo que guardo FMG),
 ``schema`` (el documento producido no valida: fallo del importador).
+``import_with_review`` devuelve ademas un ``ImportReview`` (marcadores automaticos y burgs borrados).
 
 El ``.map`` no guarda la forma de las celdas del mapa politico: solo la rejilla y sus alturas; FMG las rehace al
 cargar y los arrays por celda siguen ese orden. Aqui se rehacen igual (``reGraph`` de FMG) y se comprueba, con el
@@ -15,6 +16,7 @@ import hashlib
 import json
 import math
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -28,9 +30,9 @@ SEA_LEVEL = 20
 _COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 # Posicion de cada registro del .map (FMG 1.137.6): 46 registros separados por saltos de linea.
-_PARAMS, _BIOMES, _GRID, _GRID_H, _GRID_F, _GRID_T, _FEATURES, _STATES, _BURGS = 0, 3, 6, 7, 9, 10, 12, 14, 15
+_PARAMS, _NOTES, _BIOMES, _GRID, _GRID_H, _GRID_F, _GRID_T, _FEATURES, _STATES, _BURGS = 0, 4, 3, 6, 7, 9, 10, 12, 14, 15
 _C_BIOME, _C_RIVER, _C_STATE, _C_PROVINCE = 16, 22, 25, 27
-_PROVINCES, _RIVERS, _ROUTES = 30, 32, 37
+_PROVINCES, _RIVERS, _MARKERS, _ROUTES = 30, 32, 35, 37
 _MIN_RECORDS = 45
 
 
@@ -39,6 +41,25 @@ class MapError(Exception):
         super().__init__(f"{code}: {message}")
         self.code = code
         self.detail = detail if detail is not None else message
+
+
+@dataclass(frozen=True)
+class Marker:
+    """Marcador automatico de FMG (nombre en ingles): no entra en el mapa, queda en el informe."""
+    id: int
+    type: str
+    x: float
+    y: float
+    cell: int
+    name: str | None
+    legend: str | None
+
+
+@dataclass(frozen=True)
+class ImportReview:
+    """Lo que FMG genero solo y el importador no lleva al mapa, para que una persona lo revise (como ``revisar`` de WMF)."""
+    markers: tuple[Marker, ...]
+    deleted_burgs: int
 
 
 class MapImporter(Protocol):
@@ -174,6 +195,11 @@ def _color(v) -> dict:
     return {"color": v} if isinstance(v, str) and _COLOR.match(v) else {}
 
 
+def _text(s):
+    """Texto de FMG sin surrogates sueltos (algun nombre automatico trae medio emoji)."""
+    return None if s is None else s.encode("utf-16", "surrogatepass").decode("utf-16", "replace")
+
+
 def _live(items) -> list[dict]:
     return [x for x in items if isinstance(x, dict) and not x.get("removed")]
 
@@ -186,6 +212,9 @@ class FmgImporter:
     version = FMG_VERSION
 
     def import_map(self, path: str | Path) -> dict:
+        return self.import_with_review(path)[0]
+
+    def import_with_review(self, path: str | Path) -> tuple[dict, ImportReview]:
         p = Path(path)
         try:
             raw = p.read_bytes()
@@ -196,7 +225,7 @@ class FmgImporter:
         except UnicodeDecodeError as e:
             raise MapError("malformed", f"{p.name} no es texto UTF-8: no parece un .map de FMG") from e
         try:
-            doc = self._build(_records(text), p.name, "sha256:" + hashlib.sha256(raw).hexdigest())
+            doc, review = self._build(_records(text), p.name, "sha256:" + hashlib.sha256(raw).hexdigest())
         except (KeyError, IndexError, TypeError, ValueError, AttributeError, ArithmeticError) as e:
             raise MapError("malformed", f"{p.name}: registros incoherentes ({type(e).__name__}: {e})") from e
         errors = validate(doc, load_schema("gworld.map/0"))
@@ -205,9 +234,9 @@ class FmgImporter:
             raise MapError("schema", f"el mapa importado no valida: {e.path} {e.code}", [(x.path, x.code) for x in errors])
         from gworld.topology import check_map  # aqui y no arriba: topology importa MapError de este modulo
         check_map(doc)
-        return doc
+        return doc, review
 
-    def _build(self, rec: list[str], name: str, digest: str) -> dict:
+    def _build(self, rec: list[str], name: str, digest: str) -> tuple[dict, ImportReview]:
         params = rec[_PARAMS].split("|")
         if params[0] != FMG_VERSION:
             if not re.match(r"^\d+\.\d+\.\d+$", params[0]):
@@ -300,9 +329,18 @@ class FmgImporter:
                     rv["name"] = r["name"]
                 rivers.append(rv)
 
+        notes = {x.get("id"): x for x in _json(rec[_NOTES], "notes", []) if isinstance(x, dict)}
+        markers = tuple(
+            Marker(m["i"], m["type"], _round(m["x"], 2), _round(m["y"], 2), m["cell"],
+                   _text(notes.get(f"marker{m['i']}", {}).get("name")),
+                   _text(notes.get(f"marker{m['i']}", {}).get("legend")))
+            for m in _json(rec[_MARKERS], "markers", []) if isinstance(m, dict))
+        deleted = sum(1 for b in _json(rec[_BURGS], "burgs", []) if isinstance(b, dict) and b.get("removed"))
+
         origin = {"file": {"name": name, "format": self.format, "formatVersion": FMG_VERSION}, "sha256": digest,
                   "importer": f"{self.id}", "seed": params[3], "created": params[2]}
-        return {"kind": "gworld.map/0", "origin": origin,
+        doc = {"kind": "gworld.map/0", "origin": origin,
                 "geometry": {"width": width, "height": height, "unitKm": 1, "yDown": True, "vertices": vertices},
                 "seaLevel": SEA_LEVEL, "biomes": biomes, "cells": cells, "zones": zones, "places": places,
                 "routes": routes, "rivers": rivers}
+        return doc, ImportReview(markers, deleted)
