@@ -20,7 +20,10 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from gworld.maprules import bind
 from gworld.maps import FmgImporter, MapError
+from gworld.schema import validate
+from gworld.schemas import load_schema
 
 MAP_FILE = Path("docs/map/Helek_World.map")
 LORE_FILE = Path("map-generator/lore.json")
@@ -40,19 +43,27 @@ def _slug(text: str) -> str:
 def _pick(table: dict, key: str, what: str, rid: str):
     if key not in table:
         raise MapError("unknown_name", f"{what} {key!r} no se resuelve (regla {rid})", {"id": rid, "name": key})
-    return table[key]
+    v = table[key]
+    if isinstance(v, list):  # varios con el mismo nombre
+        if len(v) > 1:
+            raise MapError("ambiguous_name", f"{what} {key!r} es ambiguo: {', '.join(map(str, v))} (regla {rid})",
+                           {"id": rid, "name": key, "candidates": v})
+        return v[0]
+    return v
 
 
 class _Names:
     """Nombres de WMF -> ids del mapa."""
 
     def __init__(self, doc: dict):
-        self.layers: dict[str, dict[str, str]] = {"region": {}, "province": {}}
+        self.layers: dict[str, dict[str, list[str]]] = {"region": {}, "province": {}}
         for z in doc["zones"]:
             if z["layer"] in self.layers:
-                self.layers[z["layer"]][z["name"]] = z["id"]
-        self.places = {p["name"]: p["id"] for p in doc["places"]}
-        berig_region = self.layers["region"].get(BERIG_REGION)
+                self.layers[z["layer"]].setdefault(z["name"], []).append(z["id"])
+        self.places: dict[str, list[int]] = {}
+        for p in doc["places"]:
+            self.places.setdefault(p["name"], []).append(p["id"])
+        berig_region = next(iter(self.layers["region"].get(BERIG_REGION, [])), None)
         count: Counter = Counter()
         for c in doc["cells"]:
             if berig_region in c.get("zones", []):
@@ -129,7 +140,7 @@ def _measure(m: dict, n: _Names) -> dict:
     else:
         name = m.get("continente") or m["region"]
         typ = {"area": "area", "envolvente": "extent", "forma": "shape"}[kind]
-        rid = f"{typ}-{_slug(name)}"
+        rid = f"{typ}-{_slug(name)}"[:64].strip("-")
         out = {"type": typ, "zone": n.zone({"continente": name} if "continente" in m else name, rid)}
         text = f"{ {'area': 'Área', 'extent': 'Envolvente', 'shape': 'Forma'}[typ] } de {name}"
     if "valor" in m:
@@ -144,12 +155,29 @@ def _measure(m: dict, n: _Names) -> dict:
 def convert(lore: dict, canon: dict, doc: dict) -> dict:
     """``gworld.maprules/0`` de las reglas de ``lore`` y las medidas de ``canon`` sobre el mapa ``doc``."""
     n = _Names(doc)
-    rules = [_rule(r, n) for r in lore["reglas"]] + [_measure(m, n) for m in canon["medidas"]]
-    undecided = [_rule(r, n) for r in lore.get("sinDecidir", [])] + [_measure(m, n) for m in canon.get("sinDecidir", [])]
+    rules = [_rule(r, n) for r in lore["reglas"]]
+    undecided = [_rule(r, n) for r in lore.get("sinDecidir", [])]
+    used = {r["id"] for r in rules + undecided}
+    measures = [_measure(m, n) for m in canon["medidas"]]
+    free = [_measure(m, n) for m in canon.get("sinDecidir", [])]
+    for r in measures + free:  # los ids generados que chocan reciben -2, -3...
+        base, k = r["id"], 1
+        while r["id"] in used:
+            k += 1
+            r["id"] = f"{base[:64 - len(str(k)) - 1].strip('-')}-{k}"
+        used.add(r["id"])
+    rules += measures
+    undecided += free
     out = {"kind": "gworld.maprules/0", "map": doc["origin"]["sha256"], "tolerance": canon["tolerancia"],
            "rules": rules}
     if undecided:
         out["undecided"] = undecided
+    errors = validate(out, load_schema("gworld.maprules/0"))
+    if errors:
+        e = errors[0]
+        raise MapError("schema", f"la salida no cumple gworld.maprules/0: {e.path or '/'} {e.code} {e.params}",
+                       [(x.path, x.code) for x in errors])
+    bind(out, doc)
     return out
 
 
@@ -166,6 +194,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--wmf", required=True, help="carpeta de World-Maker-Fantasy (solo lectura)")
     ap.add_argument("--out", required=True, help="gworld.maprules/0 que se escribe")
     args = ap.parse_args(argv)
+    if Path(args.out).resolve().is_relative_to(Path(args.wmf).resolve()):
+        print(f"error: --out {args.out} cae dentro de --wmf {args.wmf} (WMF es solo lectura)", file=sys.stderr)
+        return 1
     try:
         rules = convert_dir(args.wmf)
     except (MapError, OSError, ValueError) as e:

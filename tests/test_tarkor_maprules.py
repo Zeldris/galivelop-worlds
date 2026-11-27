@@ -7,8 +7,11 @@ hay WMF (``GW_WMF_DIR`` o ``../World-Maker-Fantasy`` junto al repo).
 import json
 import os
 import tempfile
+import contextlib
+import io
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from gworld.maprules import bind, check_rules, load_map_rules
 from gworld.maps import FmgImporter, MapError
@@ -143,6 +146,61 @@ class ConvertTest(unittest.TestCase):
                 convert(lo, ca, FAKE)
             self.assertEqual(cm.exception.code, "unknown_name")
             self.assertIn(repr(name), str(cm.exception))
+
+    def test_ids_generados_recortados_a_64(self):
+        long = "Region " + "muy larga " * 10
+        doc = {**FAKE, "zones": FAKE["zones"] + [{"id": "region:9", "layer": "region", "name": long}]}
+        out = convert(lore(), canon([{"que": "area", "region": long, "valor": 1},
+                                     {"que": "envolvente", "region": long, "valor": [1, 2]},
+                                     {"que": "distancia", "lugares": ["Alfa", "Beta"], "lore": long, "valor": 1}]),
+                      doc)
+        for r in out["rules"]:
+            self.assertLessEqual(len(r["id"]), 64)
+            self.assertFalse(r["id"].endswith("-"))
+
+    def test_ids_que_chocan_llevan_sufijo(self):
+        out = convert(lore(), canon([{"que": "area", "region": "Llanuras", "valor": 1},
+                                     {"que": "area", "region": "Llanuras", "valor": 2}],
+                                    undecided=[{"que": "area", "region": "Llanuras", "rango": [1, 2]}]), FAKE)
+        self.assertEqual([r["id"] for r in out["rules"]], ["area-llanuras", "area-llanuras-2"])
+        self.assertEqual([r["id"] for r in out["undecided"]], ["area-llanuras-3"])
+
+    def test_nombre_ambiguo(self):
+        doc = {**FAKE, "zones": FAKE["zones"] + [{"id": "region:8", "layer": "region", "name": "Llanuras"}],
+               "places": FAKE["places"] + [{"id": 9, "name": "Alfa"}]}
+        for lo, ca, name in [(lore({"id": "r", "tipo": "lindan", "a": "Margen", "b": "Llanuras"}), canon(),
+                              "Llanuras"),
+                             (lore(), canon([{"que": "distancia", "lugares": ["Alfa", "Beta"]}]), "Alfa")]:
+            with self.subTest(name=name), self.assertRaises(MapError) as cm:
+                convert(lo, ca, doc)
+            self.assertEqual(cm.exception.code, "ambiguous_name")
+            self.assertIn(repr(name), str(cm.exception))
+        # Un nombre repetido que ninguna regla cita no estorba.
+        convert(lore({"id": "r", "tipo": "lindan", "a": "Margen", "b": "Cristal Helado"}), canon(), doc)
+
+    def test_salida_invalida_no_se_escribe(self):
+        bad = canon([{"que": "envolvente", "region": "Llanuras", "rango": [1, 2]}])
+        with self.assertRaises(MapError) as cm:
+            convert(lore(), bad, FAKE)
+        self.assertEqual(cm.exception.code, "bad_params")
+        self.assertIn("extent no admite range", str(cm.exception))
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "r.json"
+            err = io.StringIO()
+            with mock.patch("tools.tarkor_maprules.convert_dir", lambda wmf: convert(lore(), bad, FAKE)), \
+                    contextlib.redirect_stderr(err):
+                self.assertEqual(main(["--wmf", "wmf", "--out", str(out)]), 1)
+            self.assertFalse(out.exists())
+            self.assertIn("extent no admite range", err.getvalue())
+
+    def test_out_dentro_de_wmf(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "sub" / ".." / "reglas.json"
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err):
+                self.assertEqual(main(["--wmf", tmp, "--out", str(out)]), 1)
+            self.assertIn("cae dentro de --wmf", err.getvalue())
+            self.assertFalse(out.exists())
 
     def test_tipo_desconocido(self):
         with self.assertRaises(MapError) as cm:

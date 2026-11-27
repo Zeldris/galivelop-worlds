@@ -117,6 +117,7 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
   `between` y `and` pasan de zona a lista de zonas (unión de sus celdas, como `entre` e `y` de WMF): la regla
   `margen-se-adelgaza` tiene dos regiones en `entre` y no se podía expresar; `gworld/maprules.py` (`PARAMS`,
   `_narrows`) y las llamadas de `tests/test_maprules.py` actualizadas. `tools/__init__.py` vacío para importar el módulo.
+- 2026-11-27: arreglos de la revisión de bloque. `bind`: `extent` sin `range`, `closes-by.by`/`borders.b`/`only-borders.with` en la capa de `zone`/`a` (`wrong_layer`), `closes-by` con `strip > 0` y `0 <= min <= 1`; `area`/`extent` sin tierra dan «sin celdas de tierra» (también en `undecided`); `_corridor` usa `min(start)` (paridad con WMF: `home` None = region 0 pisable; **asunto para MAP-5**, decidir si debe serlo); `_is_num` y `tolerance` rechazan no finitos; una celda sin `height` es agua; `tarkor_maprules`: ids recortados a 64, sufijo `-2`, `-3`… si chocan, salida validada con esquema y `bind` antes de escribir, `ambiguous_name`, `--out` fuera de `--wmf`; `pack`: `unreadable` de las reglas sale como `PackError('unreadable')`.
 
 ## Verification
 

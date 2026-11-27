@@ -299,6 +299,13 @@ class PackTest(unittest.TestCase):
         (self.d / "mapa.json").write_text("{no", encoding="utf-8")
         self.assertIn("malformed", str(code_of(self, self.d)))
 
+    def test_map_rules_unreadable_is_unreadable(self):
+        make(self.d, map_rules="mapa.json")
+        (self.d / "mapa.json").write_bytes(b"\xff\xfe{")  # no es UTF-8: load_map_rules da MapError('unreadable')
+        err = code_of(self, self.d)
+        self.assertEqual(err.code, "unreadable")
+        self.assertIn("mapa.json", str(err))
+
     def test_map_rules_empty_path_is_schema(self):
         make(self.d, map_rules="")
         self.assertEqual(code_of(self, self.d).code, "schema")
