@@ -18,6 +18,7 @@ from gworld.topology import check_map
 
 FIX = Path(__file__).parent / "fixtures" / "helek"
 MAP = Path("/home/user/World-Maker-Fantasy/docs/map/Helek_World.map")
+REVISAR = Path("/home/user/World-Maker-Fantasy/map-generator/mundo/revisar.json")
 MINI = Path(__file__).parent / "fixtures" / "mini.map"
 STATES_RECORD = 14
 # Diferencia conocida: Nabieus se movio a mano en WMF (helek.json) tras importar; el .map la guarda en otra celda.
@@ -172,6 +173,17 @@ class FromRealMap(unittest.TestCase):
         self.assertEqual(len(r.markers), 40)
         self.assertEqual(r.deleted_burgs, 610)
         self.assertFalse({p["name"] for p in self.doc["places"]} & {m.name for m in r.markers})
+        self.assertEqual(r.skipped, 0)
+
+    @unittest.skipUnless(REVISAR.exists(), "sin revisar.json de WMF")
+    def test_informe_revisar_marcador_a_marcador(self):
+        # WMF importar.py:155-164: id, tipo, x, y, celda, nombre y leyenda de cada marcador
+        w = json.loads(REVISAR.read_text(encoding="utf-8"))
+        self.assertEqual(self.review.deleted_burgs, w["burgsBorradosEnAzgaar"])
+        self.assertEqual(len(self.review.markers), len(w["marcadores"]))
+        for m, wm in zip(self.review.markers, w["marcadores"]):
+            self.assertEqual((m.id, m.type, m.x, m.y, m.cell, m.name, m.legend),
+                             (wm["i"], wm["tipo"], wm["x"], wm["y"], wm["celda"], wm["nombre"], wm["leyenda"]), wm["i"])
 
     def test_import_map_da_solo_el_documento(self):
         self.assertIsInstance(FmgImporter().import_map(MAP), dict)

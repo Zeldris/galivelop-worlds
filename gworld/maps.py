@@ -60,6 +60,7 @@ class ImportReview:
     """Lo que FMG genero solo y el importador no lleva al mapa, para que una persona lo revise (como ``revisar`` de WMF)."""
     markers: tuple[Marker, ...]
     deleted_burgs: int
+    skipped: int = 0  # marcadores o notas que no se pudieron leer
 
 
 class MapImporter(Protocol):
@@ -200,6 +201,49 @@ def _text(s):
     return None if s is None else s.encode("utf-16", "surrogatepass").decode("utf-16", "replace")
 
 
+def _str(v):
+    return _text(v) if isinstance(v, str) else None
+
+
+def _num(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def _review(rec: list[str]) -> ImportReview:
+    """Informe «revisar»: se lee sin fallar; lo que no se puede leer se salta y se cuenta."""
+    skipped = 0
+
+    def load(i, name):
+        nonlocal skipped
+        try:
+            v = json.loads(rec[i]) if rec[i] else []
+        except (ValueError, IndexError):
+            skipped += 1
+            return []
+        if not isinstance(v, list):
+            skipped += 1
+            return []
+        return v
+
+    notes = {}
+    for x in load(_NOTES, "notes"):
+        if isinstance(x, dict) and isinstance(x.get("id"), str):
+            notes[x["id"]] = x
+        else:
+            skipped += 1
+    markers = []
+    for m in load(_MARKERS, "markers"):
+        if not (isinstance(m, dict) and isinstance(m.get("i"), int) and isinstance(m.get("type"), str)
+                and _num(m.get("x")) and _num(m.get("y")) and isinstance(m.get("cell"), int)):
+            skipped += 1
+            continue
+        note = notes.get(f"marker{m['i']}", {})
+        markers.append(Marker(m["i"], m["type"], _round(m["x"], 2), _round(m["y"], 2), m["cell"],
+                              _str(note.get("name")), _str(note.get("legend"))))
+    deleted = sum(1 for b in load(_BURGS, "burgs") if isinstance(b, dict) and b.get("removed"))
+    return ImportReview(tuple(markers), deleted, skipped)
+
+
 def _live(items) -> list[dict]:
     return [x for x in items if isinstance(x, dict) and not x.get("removed")]
 
@@ -212,9 +256,13 @@ class FmgImporter:
     version = FMG_VERSION
 
     def import_map(self, path: str | Path) -> dict:
-        return self.import_with_review(path)[0]
+        return self._import(path, False)[0]
 
     def import_with_review(self, path: str | Path) -> tuple[dict, ImportReview]:
+        doc, review = self._import(path, True)
+        return doc, review
+
+    def _import(self, path: str | Path, with_review: bool) -> tuple[dict, ImportReview | None]:
         p = Path(path)
         try:
             raw = p.read_bytes()
@@ -225,7 +273,9 @@ class FmgImporter:
         except UnicodeDecodeError as e:
             raise MapError("malformed", f"{p.name} no es texto UTF-8: no parece un .map de FMG") from e
         try:
-            doc, review = self._build(_records(text), p.name, "sha256:" + hashlib.sha256(raw).hexdigest())
+            recs = _records(text)
+            doc = self._build(recs, p.name, "sha256:" + hashlib.sha256(raw).hexdigest())
+            review = _review(recs) if with_review else None
         except (KeyError, IndexError, TypeError, ValueError, AttributeError, ArithmeticError) as e:
             raise MapError("malformed", f"{p.name}: registros incoherentes ({type(e).__name__}: {e})") from e
         errors = validate(doc, load_schema("gworld.map/0"))
@@ -236,7 +286,7 @@ class FmgImporter:
         check_map(doc)
         return doc, review
 
-    def _build(self, rec: list[str], name: str, digest: str) -> tuple[dict, ImportReview]:
+    def _build(self, rec: list[str], name: str, digest: str) -> dict:
         params = rec[_PARAMS].split("|")
         if params[0] != FMG_VERSION:
             if not re.match(r"^\d+\.\d+\.\d+$", params[0]):
@@ -329,18 +379,10 @@ class FmgImporter:
                     rv["name"] = r["name"]
                 rivers.append(rv)
 
-        notes = {x.get("id"): x for x in _json(rec[_NOTES], "notes", []) if isinstance(x, dict)}
-        markers = tuple(
-            Marker(m["i"], m["type"], _round(m["x"], 2), _round(m["y"], 2), m["cell"],
-                   _text(notes.get(f"marker{m['i']}", {}).get("name")),
-                   _text(notes.get(f"marker{m['i']}", {}).get("legend")))
-            for m in _json(rec[_MARKERS], "markers", []) if isinstance(m, dict))
-        deleted = sum(1 for b in _json(rec[_BURGS], "burgs", []) if isinstance(b, dict) and b.get("removed"))
-
         origin = {"file": {"name": name, "format": self.format, "formatVersion": FMG_VERSION}, "sha256": digest,
                   "importer": f"{self.id}", "seed": params[3], "created": params[2]}
         doc = {"kind": "gworld.map/0", "origin": origin,
                 "geometry": {"width": width, "height": height, "unitKm": 1, "yDown": True, "vertices": vertices},
                 "seaLevel": SEA_LEVEL, "biomes": biomes, "cells": cells, "zones": zones, "places": places,
                 "routes": routes, "rivers": rivers}
-        return doc, ImportReview(markers, deleted)
+        return doc

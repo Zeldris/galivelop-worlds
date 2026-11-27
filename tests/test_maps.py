@@ -1,4 +1,5 @@
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -153,6 +154,46 @@ class FmgImportTest(unittest.TestCase):
                 FmgImporter().import_map(FIXTURE)
         self.assertEqual(cm.exception.code, "malformed")
         self.assertIn("ZeroDivisionError", str(cm.exception))
+
+
+class RevisarTolerante(unittest.TestCase):
+    """El informe «revisar» no puede tumbar import_map: lo ilegible se salta y se cuenta."""
+
+    @staticmethod
+    def altered(markers, notes):
+        lines = fixture_lines()
+        lines[35] = markers if isinstance(markers, str) else json.dumps(markers)
+        lines[4] = notes if isinstance(notes, str) else json.dumps(notes)
+        return "\n".join(lines)
+
+    @staticmethod
+    def both(text):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "x.map"
+            p.write_text(text, encoding="utf-8")
+            return FmgImporter().import_map(p), FmgImporter().import_with_review(p)
+
+    def test_marcador_sin_type(self):
+        text = self.altered([{"i": 1, "x": 1, "y": 2, "cell": 0}, {"i": 2, "type": "ruins", "x": 1, "y": 2, "cell": 0}], [])
+        doc, (doc2, review) = self.both(text)
+        self.assertEqual(doc, doc2)
+        self.assertEqual([m.id for m in review.markers], [2])
+        self.assertEqual(review.skipped, 1)
+
+    def test_nota_con_name_numerico(self):
+        text = self.altered([{"i": 2, "type": "ruins", "x": 1, "y": 2, "cell": 0}],
+                            [{"id": "marker2", "name": 7, "legend": "ok"}])
+        doc, (_, review) = self.both(text)
+        self.assertIsNone(review.markers[0].name)
+        self.assertEqual(review.markers[0].legend, "ok")
+
+    def test_notas_que_no_son_json(self):
+        text = self.altered([{"i": 2, "type": "ruins", "x": 1, "y": 2, "cell": 0}], "{no es json")
+        doc, (doc2, review) = self.both(text)
+        self.assertEqual(doc, doc2)
+        self.assertEqual(len(review.markers), 1)
+        self.assertIsNone(review.markers[0].name)
+        self.assertEqual(review.skipped, 1)
 
 
 class GeometriaTest(unittest.TestCase):
