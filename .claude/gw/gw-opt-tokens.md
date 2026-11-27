@@ -29,10 +29,22 @@ las crea una vez; desde entonces son del proyecto.
 - Revisiones: `/code-review` desde la sesión principal, sin envolverlo en un `gw-reviewer` Opus que solo lo lanza
   (Q-19).
 
+- Esperar el CI (Q-35): hasta que el flujo tenga `ci-status.py --wait`, una sola orden en segundo plano
+  (`until python3 .claude/gw/scripts/ci-status.py >/dev/null; do sleep 60; done`, con `run_in_background`); nunca
+  `send_later` + `ReadNotifications` (0.2: ~20 llamadas, ~2,4 M).
+- Revisiones (Q-36, refuerza Q-19): ningún `gw-reviewer` con Opus que solo lance `/code-review` (0.2: 5).
+- `gw-worker` con `sonnet` también para el esquema de una tarea y los arreglos de revisión (Q-38); `opus` solo para
+  ganchos, guardas, seguridad y los scripts que los llaman.
+- Menos llamadas sueltas (Q-39): `git status`, `git log` y `ci-status` en una sola orden; las filas del plan con
+  `roadmap.py show <id>`, no con `sed` de `docs/plan.md` (0.2: 12 lecturas).
+
 - Ventana de compactación automática: `CLAUDE_CODE_AUTO_COMPACT_WINDOW` en `.claude/settings.json`.
 
 ## Referencias medidas
 
 <!-- Cifras medidas con las que comparar: fecha, sesión, contexto medio, llamadas, total. -->
+- 2026-11-27, 0.2 (W4): 267 llamadas, contexto medio 119k, techo 161k, 31,8 M de entrada (98 % caché); subagentes
+  17,6 M en 25 registros (sonnet 12,7 M, opus 4,9 M), sumados a mano: `measure.py` solo ve la carpeta de la sesión
+  actual (Q-37, pedido al flujo).
 - 2026-11-27, W1: 137 llamadas, contexto medio 107k, techo 152k, 14,6 M de entrada (98 % caché); subagentes 0,74 M.
 - 2026-11-26, F0: 82 llamadas, contexto medio 118k, techo 151k, 9,7 M de entrada (98 % caché); subagentes 1,5 M.

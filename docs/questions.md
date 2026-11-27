@@ -311,35 +311,45 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 
 ## Q-35
 - Refs: W4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Esperar el CI: pedir al flujo ci-status.py --wait (en segundo plano, avisa al acabar) y, hasta tenerlo, un bucle 'until ci-status.py; do sleep 60; done' con run_in_background en vez de send_later + ReadNotifications (20 llamadas en 0.2, ~2,4 M)
 - Recommendation: sí: hoy no hay herramienta para esperar el CI, por eso se volvió a usar send_later
+- Answer: sí
+- Answered: 2026-11-27
 
 ## Q-36
 - Refs: W4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Revisiones: lanzar /code-review desde la sesión principal y, para el flujo, que gw-orchestrate-dealer deje de ofrecer el gw-reviewer Opus (5 en 0.2 pese a Q-19)
 - Recommendation: sí: la regla Q-19 ya existe y no se siguió; convertirla en comprobación
+- Answer: sí
+- Answered: 2026-11-27
 
 ## Q-37
 - Refs: W4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Medición: pedir al flujo que measure.py sume los subagentes de todas las carpetas de sesión del proyecto (tras un relevo del contenedor se guardan en carpetas de otra sesión)
 - Recommendation: sí: sin esto las mediciones mienten (ven 1 de 25 subagentes)
+- Answer: sí
+- Answered: 2026-11-27
 
 ## Q-38
 - Refs: W4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Modelo de los gw-worker: sonnet también para el esquema de una tarea y los arreglos de revisión (MAP-1 y 'Arreglos medios' fueron con opus)
 - Recommendation: sí, con la excepción de AGENTS.md (ganchos, guardas, seguridad)
+- Answer: sí
+- Answered: 2026-11-27
 
 ## Q-39
 - Refs: W4
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: Agrupar en una orden git status/log/ci-status y leer filas del plan con roadmap.py show <id> en vez de sed de docs/plan.md (12 lecturas)
 - Recommendation: sí: coste casi nulo
+- Answer: sí
+- Answered: 2026-11-27

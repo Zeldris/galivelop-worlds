@@ -31,6 +31,7 @@ Lo que queda abierto; la bitácora solo apunta aquí. Se añade y se quita en es
 - Leve (revisión de bloque MAP-3): `gworld/topology.py` `check_map` no detecta una vecina repetida en `neighbours` (el esquema no tiene `uniqueItems`); añadir `duplicate_neighbour` con su test.
 - Leve (revisión de bloque MAP-3): `tests/test_topology.py` `test_empate_se_decide_por_id` pasa también sin la regla de desempate (la cubre `path(4, 0)` en `test_camino_mas_corto`); buscarle un caso que dependa de ella.
 - Repo Galivelop-workflow (retro W1, Q-18/Q-19/Q-21): `ci-status.py --wait` para esperar el CI en segundo plano; `gw-orchestrate-dealer` sin envolver `/code-review` en un `gw-reviewer` Opus; `check.sh`/`ci-local.py` con los tests en cada versión de Python de la matriz instalada en local (el CI rojo de PCK-4 por 3.11/3.12).
+- Repo Galivelop-workflow (gw-opt-tokens 0.2, Q-35/Q-36/Q-37): `ci-status.py --wait` sigue faltando y sin él se vuelve a `send_later`; `gw-orchestrate-dealer` sigue ofreciendo el `gw-reviewer` Opus; `measure.py` debe sumar los subagentes de todas las carpetas de sesión del proyecto (tras un relevo del contenedor quedan en las de otra sesión).
 
 ## Leve (revisión de bloque MAP-4)
 
