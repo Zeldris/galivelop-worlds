@@ -28,3 +28,11 @@ python3 tests/fixtures/helek/regen.py /ruta/a/Helek_World.map
 ```
 
 Reescribe `helek.gworld.json`; si cambia el importador o el `.map`, actualiza aqui las huellas.
+
+## Reglas convertidas
+
+`helek.maprules.json`: lo que da `convert` de `tools/tarkor_maprules.py` sobre `map-generator/lore.json` (sha256
+`4cdb71f75ea07de6a0231e8dfaeb18669eed7b028ab24798a58838b897386c24`) y `canon.json` (sha256
+`7e286df339a911409daa004d1491ecac3e370167fd2cd3fe88d7dda57f091bb4`) de WMF, mismo commit, sobre `helek.gworld.json`.
+JSON con claves ordenadas y sin espacios. Lo usa `tests/test_helek_rules.py`, que corre sin el clon de WMF.
+Mismo contenido y licencia que `helek.json`.
