@@ -3,7 +3,8 @@
 import json
 from importlib import resources
 
-_FILES = {"gworld.pack/0": "pack-0.json", "gworld.canon/0": "canon-0.json", "gworld.map/0": "map-0.json"}
+_FILES = {"gworld.pack/0": "pack-0.json", "gworld.canon/0": "canon-0.json", "gworld.map/0": "map-0.json",
+          "gworld.maprules/0": "maprules-0.json"}
 
 
 def load_schema(kind: str) -> dict:

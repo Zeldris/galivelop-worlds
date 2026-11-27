@@ -8,7 +8,7 @@ from pathlib import Path
 from gworld.pack import PackError, WorldPack, canon_digest, load_pack
 
 
-def make(root, canon_files=None, canon_file=None, licence=None, canon_path=None, sha=None, raw=None, drop=()):
+def make(root, canon_files=None, canon_file=None, licence=None, canon_path=None, sha=None, raw=None, drop=(), map_rules=None):
     root = Path(root)
     if canon_file is not None:
         (root / "canon.md").write_bytes(canon_file)
@@ -23,6 +23,8 @@ def make(root, canon_files=None, canon_file=None, licence=None, canon_path=None,
         cp = "canon"
     m = {"kind": "gworld.pack/0", "id": "mundo", "version": "1", "licence": {"spdx": "MIT"} if licence is None else licence,
          "canon": {"path": canon_path or cp, "sha256": sha or canon_digest(target)}, "rules": ["r1"]}
+    if map_rules is not None:
+        m["mapRules"] = map_rules
     for k in drop:
         m.pop(k)
     (root / "pack.json").write_text(raw if raw is not None else json.dumps(m), encoding="utf-8")
@@ -247,6 +249,59 @@ class PackTest(unittest.TestCase):
                 f.parent.mkdir(parents=True, exist_ok=True)
                 f.write_bytes(files[n])
         self.assertEqual(canon_digest(a), canon_digest(b))
+
+    def write_rules(self, rel="mapa.json", obj=None):
+        f = self.d / rel
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps(obj if obj is not None else {"kind": "gworld.maprules/0", "map": "sha256:" + "0" * 64,
+                                                             "rules": []}), encoding="utf-8")
+
+    def test_map_rules_absent_is_none(self):
+        make(self.d)
+        self.assertIsNone(load_pack(self.d).map_rules)
+
+    def test_map_rules_present(self):
+        self.write_rules("sub/mapa.json")
+        make(self.d, map_rules="sub/mapa.json")
+        p = load_pack(self.d)
+        self.assertEqual(p.map_rules, self.d / "sub" / "mapa.json")
+        self.assertEqual(p.manifest["mapRules"], "sub/mapa.json")
+
+    def test_map_rules_outside(self):
+        (self.d / "pk").mkdir()
+        (self.d / "fuera.json").write_text("{}", encoding="utf-8")
+        for rel in ("../fuera.json", str(self.d / "fuera.json"), "a\0b"):
+            with self.subTest(rel=rel):
+                make(self.d / "pk", map_rules=rel)
+                self.assertEqual(code_of(self, self.d / "pk").code, "map_rules_outside")
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "sin symlinks")
+    def test_map_rules_symlink_outside(self):
+        (self.d / "pk").mkdir()
+        (self.d / "fuera.json").write_text("{}", encoding="utf-8")
+        os.symlink(self.d / "fuera.json", self.d / "pk" / "m.json")
+        make(self.d / "pk", map_rules="m.json")
+        self.assertEqual(code_of(self, self.d / "pk").code, "map_rules_outside")
+
+    def test_map_rules_missing(self):
+        make(self.d, map_rules="no-existe.json")
+        self.assertEqual(code_of(self, self.d).code, "map_rules_missing")
+        (self.d / "dir").mkdir()
+        make(self.d, map_rules="dir")
+        self.assertEqual(code_of(self, self.d).code, "map_rules_missing")
+
+    def test_map_rules_invalid(self):
+        self.write_rules(obj={"kind": "gworld.maprules/0", "map": "mal", "rules": []})
+        make(self.d, map_rules="mapa.json")
+        err = code_of(self, self.d)
+        self.assertEqual(err.code, "map_rules_invalid")
+        self.assertIn("schema", str(err))
+        (self.d / "mapa.json").write_text("{no", encoding="utf-8")
+        self.assertIn("malformed", str(code_of(self, self.d)))
+
+    def test_map_rules_empty_path_is_schema(self):
+        make(self.d, map_rules="")
+        self.assertEqual(code_of(self, self.d).code, "schema")
 
     def test_load_writes_nothing(self):
         make(self.d)
