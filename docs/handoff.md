@@ -10,8 +10,8 @@
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
 | **Fase / tarea** | W0 cerrada y fusionada en `main` (PR #1, `ea214e2`, CI en verde, fusión confirmada por la persona el 2026-11-27). W1 (versión 0.1): PCK-1 a PCK-7 hechos |
-| **Último punto estable** | `fix(PCK-5): arreglos de la revisión del resto del bloque W1` |
-| **Siguiente paso** | Decisión de la persona sobre la retro de W1 (`docs/records/retro-2026-11-27-w1.md`, A1-A4 y candidatos 1-4, presentadas como Q-17 a Q-24 en `docs/questions.md`); aplicar lo aprobado, escribir el `**Estado:**`, luego reviewed.sh y PR de 0.1 a main |
+| **Último punto estable** | `chore(W1): aplicar la retro de W1 decidida por la persona` |
+| **Siguiente paso** | Fase 3: revisión del cambio de `.claude/gw.json` de la retro (si `review-scope.py --trivial` no lo exime), `reviewed.sh`, push, descripción con la skill `pr` y PR de 0.1 a `main`; fusionar solo con CI en verde y confirmación de la persona |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
@@ -20,11 +20,11 @@
 
 ## Hecho (5 últimas)
 
-1. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
-2. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
-3. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
-4. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
-5. 2026-11-26 — DDD borrador 2: comprobado contra los repos hermanos y WMF; el mundo vivo se rediseña, el mapa se importa, ids de hecho derivados, «Narrador» en vez de «Cronista».
+1. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
+2. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
+3. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
+4. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
+5. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
 
 ## Pendiente
 

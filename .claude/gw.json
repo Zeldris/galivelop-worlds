@@ -300,7 +300,7 @@
   "scoutMaxAgeDays": 30,
   "relatedTests": {
     "fast": [
-      {"command": "python3 -m unittest discover -s tests -t .", "paths": "^(gworld|tests)/.*\\.py$|^pyproject\\.toml$"}
+      {"command": "python3 -m unittest discover -s tests -t .", "paths": "^(gworld|tests)/.*\\.(py|json)$|^pyproject\\.toml$"}
     ],
     "slow": []
   },
@@ -311,7 +311,8 @@
   },
   "testMap": {
     "rules": [
-      {"paths": "^gworld/(?P<name>.+)\\.py$", "tests": ["tests/test_package.py", "tests/test_{name:id}.py"]}
+      {"paths": "^gworld/schemas/", "tests": ["tests/test_package.py", "tests/test_schemas_pack_canon.py"]},
+      {"paths": "^gworld/(?!schemas/)(?P<name>.+)\\.py$", "tests": ["tests/test_package.py", "tests/test_{name:id}.py"]}
     ],
     "command": "python3 -m unittest {files}"
   },
@@ -509,7 +510,7 @@
     "path": "docs/questions.md"
   },
   "taskRecord": {
-    "enabled": false,
+    "enabled": true,
     "path": "docs/tasks",
     "requiredFor": [
       "feat",
