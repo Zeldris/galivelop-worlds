@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gworld"
+version = "0.1.0.dev0"
+description = "Galivelop Worlds: paquetes de mundo, canon, mapas y mundo vivo"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = []
+
+# Sin extras todavía: el almacén y los embeddings (invariante 13) los traerán como extras en W2.
+[project.optional-dependencies]
+
+[tool.setuptools]
+packages = ["gworld"]

@@ -40,6 +40,7 @@
     "python3 .claude/gw/scripts/md-links.py",
     "python3 .claude/gw/scripts/agent-map.py",
     "python3 .claude/gw/scripts/tests-after-main.py",
+    "python3 -m unittest discover -s tests -t .",
     "python3 .claude/gw/scripts/ci-local.py --validate"
   ],
   "checkWrapper": "",
@@ -298,7 +299,9 @@
   "scoutDir": ".claude/gw/scout",
   "scoutMaxAgeDays": 30,
   "relatedTests": {
-    "fast": [],
+    "fast": [
+      {"command": "python3 -m unittest discover -s tests -t .", "paths": "^(gworld|tests)/.*\\.py$|^pyproject\\.toml$"}
+    ],
     "slow": []
   },
   "changeSize": {
@@ -307,8 +310,10 @@
     "severity": "warn"
   },
   "testMap": {
-    "rules": [],
-    "command": ""
+    "rules": [
+      {"paths": "^gworld/(?P<name>.+)\\.py$", "tests": ["tests/test_package.py", "tests/test_{name:id}.py"]}
+    ],
+    "command": "python3 -m unittest {files}"
   },
   "plan": ["docs/plan.md"],
   "taskId": "[A-Z]{2,5}-\\d+",

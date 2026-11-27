@@ -26,7 +26,7 @@ y a grun. Si el acceso al GVE llega antes, 0.2 y 0.3 se pueden intercambiar.
 
 Lo decide: tests. Invariantes: 4, 5, 8, 9 y 13.
 
-- [ ] PCK-1 Esqueleto del paquete `gworld/` (Python ≥ 3.10, solo stdlib), `pyproject.toml` con extras vacíos, tests
+- [x] PCK-1 Esqueleto del paquete `gworld/` (Python ≥ 3.10, solo stdlib), `pyproject.toml` con extras vacíos, tests
   con `unittest` y su orden en el check (`relatedTests` y `testMap` de `.claude/gw.json`).
 - [ ] PCK-2 Comprobación mínima propia de esquemas en formato gart (D4), a cambiar por la copia vendorizada de gart.
 - [ ] PCK-3 Esquemas `gworld.pack/0` y `gworld.canon/0`, con `required` para licencia y huella.
