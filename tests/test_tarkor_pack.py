@@ -14,14 +14,15 @@ from pathlib import Path
 
 from gworld.canon import canon_index
 from gworld.pack import canon_digest, load_pack
+from tests.wmf import wmf_dir
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def wmf_canon() -> Path | None:
-    base = Path(os.environ.get("GW_WMF_DIR") or ROOT.parent / "World-Maker-Fantasy")
-    src = base / "docs" / "rpgtarkor"
-    return src if src.is_dir() else None
+    base = wmf_dir()
+    src = base / "docs" / "rpgtarkor" if base else None
+    return src if src and src.is_dir() else None
 
 
 def set_mode(root: Path, writable: bool) -> None:
@@ -37,7 +38,7 @@ class TarkorPackTest(unittest.TestCase):
     def test_paquete_de_prueba_solo_lectura(self):
         src = wmf_canon()
         if src is None:
-            self.skipTest("no hay docs/rpgtarkor/ de WMF: define GW_WMF_DIR (o deja ../World-Maker-Fantasy junto al repo)")
+            self.skipTest("no hay WMF: define GW_WMF_DIR (o deja ../World-Maker-Fantasy junto al repo)")
         digest_before = canon_digest(src)
         mtime_before = src.stat().st_mtime_ns
         md_files = sorted(p.relative_to(src).as_posix() for p in src.rglob("*.md"))

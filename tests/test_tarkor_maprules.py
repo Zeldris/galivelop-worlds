@@ -16,6 +16,7 @@ from unittest import mock
 from gworld.maprules import bind, check_rules, load_map_rules
 from gworld.maps import FmgImporter, MapError
 from tools.tarkor_maprules import convert, convert_dir, main
+from tests.wmf import wmf_dir as locate_wmf
 
 ROOT = Path(__file__).resolve().parent.parent
 SHA = "sha256:" + "ab" * 32
@@ -216,7 +217,9 @@ class ConvertTest(unittest.TestCase):
 
 
 def wmf_dir() -> Path | None:
-    base = Path(os.environ.get("GW_WMF_DIR") or ROOT.parent / "World-Maker-Fantasy")
+    base = locate_wmf()
+    if base is None:
+        return None
     needed = (base / "docs" / "map" / "Helek_World.map", base / "map-generator" / "lore.json",
               base / "map-generator" / "canon.json")
     return base if all(p.is_file() for p in needed) else None

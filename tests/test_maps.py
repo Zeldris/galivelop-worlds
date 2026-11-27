@@ -10,9 +10,11 @@ from gworld.maps import FmgImporter, MapError, MapImporter, _voronoi
 from gworld.schema import validate
 from gworld.schemas import load_schema
 from gworld.topology import check_map
+from tests.wmf import wmf_dir
 
 FIXTURE = Path(__file__).parent / "fixtures" / "mini.map"
-REAL = Path("/home/user/World-Maker-Fantasy/docs/map/Helek_World.map")
+_WMF = wmf_dir()
+REAL = _WMF / "docs" / "map" / "Helek_World.map" if _WMF else None
 
 
 def import_text(text):
@@ -207,7 +209,7 @@ class GeometriaTest(unittest.TestCase):
         self.assertEqual(_angle(0, 0), 0.0)
         self.assertEqual(_angle(0.0, -0.0), 0.0)
 
-@unittest.skipUnless(REAL.exists(), "sin el mapa real de WMF")
+@unittest.skipUnless(REAL is not None and REAL.exists(), "no hay WMF: define GW_WMF_DIR (o deja ../World-Maker-Fantasy junto al repo)")
 class RealMapSmoke(unittest.TestCase):
     def test_humo(self):
         d = FmgImporter().import_map(REAL)

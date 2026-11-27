@@ -15,10 +15,12 @@ from gworld.maps import FmgImporter, ImportReview, MapError, _records
 from gworld.schema import validate
 from gworld.schemas import load_schema
 from gworld.topology import check_map
+from tests.wmf import wmf_dir
 
 FIX = Path(__file__).parent / "fixtures" / "helek"
-MAP = Path("/home/user/World-Maker-Fantasy/docs/map/Helek_World.map")
-REVISAR = Path("/home/user/World-Maker-Fantasy/map-generator/mundo/revisar.json")
+_WMF = wmf_dir()
+MAP = _WMF / "docs" / "map" / "Helek_World.map" if _WMF else None
+REVISAR = _WMF / "map-generator" / "mundo" / "revisar.json" if _WMF else None
 MINI = Path(__file__).parent / "fixtures" / "mini.map"
 STATES_RECORD = 14
 # Diferencia conocida: Nabieus se movio a mano en WMF (helek.json) tras importar; el .map la guarda en otra celda.
@@ -141,7 +143,7 @@ class Parity(unittest.TestCase):
                 self.assertLessEqual(det * giro, 1e-6, f"punto {k} dentro del circulo del triangulo {t}")
 
 
-@unittest.skipUnless(MAP.exists(), "sin el mapa real de WMF")
+@unittest.skipUnless(MAP is not None and MAP.exists(), "no hay WMF: define GW_WMF_DIR (o deja ../World-Maker-Fantasy junto al repo)")
 class FromRealMap(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -175,7 +177,7 @@ class FromRealMap(unittest.TestCase):
         self.assertFalse({p["name"] for p in self.doc["places"]} & {m.name for m in r.markers})
         self.assertEqual(r.skipped, 0)
 
-    @unittest.skipUnless(REVISAR.exists(), "sin revisar.json de WMF")
+    @unittest.skipUnless(REVISAR is not None and REVISAR.exists(), "sin revisar.json de WMF")
     def test_informe_revisar_marcador_a_marcador(self):
         # WMF importar.py:155-164: id, tipo, x, y, celda, nombre y leyenda de cada marcador
         w = json.loads(REVISAR.read_text(encoding="utf-8"))
