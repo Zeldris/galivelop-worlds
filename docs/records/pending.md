@@ -37,3 +37,13 @@ Lo que queda abierto; la bitácora solo apunta aquí. Se añade y se quita en es
 - Leve (revisión de bloque MAP-4): `tools/tarkor_maprules.py`: una referencia dict de clase desconocida (ni `continente` ni `provincia`) se lee como provincia.
 - Leve (revisión de bloque MAP-4): `tools/tarkor_maprules.py`: una clave ausente en `lore.json` o `canon.json` da `KeyError` sin el id de la regla; convertirlo en `MapError` con el id.
 - Observación (revisión de bloque MAP-4): en `geometry.polygons` una primera celda de área 0 deja todo como huecos (igual que WMF).
+- Leve (revisión de bloque MAP-5): `tests/test_helek_parity.py:20`: la ruta fija `/home/user/World-Maker-Fantasy` hace que el CI salte `import_with_review` y la estabilidad del fixture; leer `GW_WMF_DIR` o `ROOT.parent` como `tests/test_tarkor_maprules.py:219`, y apuntar en el plan quién lo comprueba.
+- Leve (revisión de bloque MAP-5): `gworld/schemas/maprules-0.json:18`: el `enum` de `type` repite `"order"`.
+- Leve (revisión de bloque MAP-5): `gworld/schemas/maprules-0.json:18`: la nota de `corridor` dice «la region de su capa»; es la de la celda de partida (id menor) en la capa de `to`.
+- Leve (revisión de bloque MAP-5): `tests/test_helek_topology.py:64`: `delta=0.1` en 131.97 km; bajar a 0.01 y citar la cifra de WMF (131.90).
+- Leve (revisión de bloque MAP-5): `tests/test_helek_measures.py:20-32`: las cajas de WMF de diez zonas se congelan y no se comprueban (solo Berig); comprobarlas o quitarlas.
+- Leve (revisión de bloque MAP-5): `tests/test_helek_rules.py:45`: el filtro de `decided` no filtra nada; quitarlo o filtrar `r.ok is not None`.
+- Leve (revisión de bloque MAP-5): `tests/test_helek_measures.py:16`: `SHA` sin usar, parsea el fixture otra vez.
+- Leve (revisión de bloque MAP-5): `tests/fixtures/helek/README.md:4`: solo nombra `test_helek_parity.py` (también lo leen measures, rules y topology) y no da la orden que regenera `helek.maprules.json`.
+- Observación (revisión de bloque MAP-5): `Marker` redondea como JS (`_round`) y WMF con `round` de Python; en un .5 exacto podrían diferir (en Helek, ninguno).
+- Observación (revisión de bloque MAP-5): los nombres de zonas, lugares y rutas pueden traer surrogates sueltos y `regen.dump` falla al escribir UTF-8 (anterior a MAP-5).
