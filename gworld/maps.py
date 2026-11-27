@@ -203,6 +203,8 @@ class FmgImporter:
         if errors:
             e = errors[0]
             raise MapError("schema", f"el mapa importado no valida: {e.path} {e.code}", [(x.path, x.code) for x in errors])
+        from gworld.topology import check_map  # aqui y no arriba: topology importa MapError de este modulo
+        check_map(doc)
         return doc
 
     def _build(self, rec: list[str], name: str, digest: str) -> dict:

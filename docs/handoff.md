@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 (W4 Mapas) empezada: `main` traído; MAP-1 hecha (`f731aad`: `gworld/schemas/map-0.json`, celdas con vértices compartidos y zonas `<capa>:<n>`), con WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a); MAP-2 hecha (`gworld/maps.py`: `MapImporter`, `FmgImporter`, `MapError`; `gworld/_delaunay.py`), PCK-8 hecha (`428053d`: `canon_outside` para la raíz, `canon_special`, `canon_name`, `too_deep`); revisión de bloque MAP (MAP-1, MAP-2, PCK-8) cerrada: 3 medios arreglados (circuncentro como FMG, `_angle(0,0)`, symlink a la raíz del paquete), 6 leves a `pending.md` |
+| **Fase / tarea** | 0.2 (W4 Mapas) empezada: `main` traído; MAP-1 hecha (`f731aad`: `gworld/schemas/map-0.json`, celdas con vértices compartidos y zonas `<capa>:<n>`), con WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a); MAP-2 hecha (`gworld/maps.py`: `MapImporter`, `FmgImporter`, `MapError`; `gworld/_delaunay.py`), PCK-8 hecha (`428053d`: `canon_outside` para la raíz, `canon_special`, `canon_name`, `too_deep`); revisión de bloque MAP (MAP-1, MAP-2, PCK-8) cerrada: 3 medios arreglados (circuncentro como FMG, `_angle(0,0)`, symlink a la raíz del paquete), 6 leves a `pending.md`; MAP-3 hecha (`gworld/topology.py`: `check_map` con 16 códigos, `Topology`; `import_map` la llama; Helek_World.map, 5120 celdas, pasa) |
 | **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
-| **Siguiente paso** | MAP-3: topología del mapa (celdas, vecinas, regiones, rutas, ríos, distancias; grafo conexo sin huérfanas) sobre `gworld.map/0` |
+| **Siguiente paso** | MAP-4: comprobación del mapa contra el canon (MAP-3 hecha: `gworld/topology.py`, `check_map` y `Topology`; pendiente su revisión de bloque) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación

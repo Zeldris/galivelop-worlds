@@ -8,6 +8,7 @@ from gworld._delaunay import _angle
 from gworld.maps import FmgImporter, MapError, MapImporter, _voronoi
 from gworld.schema import validate
 from gworld.schemas import load_schema
+from gworld.topology import check_map
 
 FIXTURE = Path(__file__).parent / "fixtures" / "mini.map"
 REAL = Path("/home/user/World-Maker-Fantasy/docs/map/Helek_World.map")
@@ -76,7 +77,19 @@ class FmgImportTest(unittest.TestCase):
         self.assertNotEqual(import_text("\n".join(lines))["origin"]["sha256"], self.doc["origin"]["sha256"])
 
     def test_determinista(self):
-        self.assertEqual(FmgImporter().import_map(FIXTURE), self.doc)
+        again = FmgImporter().import_map(FIXTURE)
+        self.assertEqual(again, self.doc)
+        self.assertEqual(again["origin"]["sha256"], self.doc["origin"]["sha256"])
+
+    def test_pasa_check_map(self):
+        check_map(self.doc)
+
+    def test_import_map_llama_a_check_map(self):
+        err = MapError("orphan_cell", "x", {"id": 3})
+        with mock.patch("gworld.topology.check_map", side_effect=err):
+            with self.assertRaises(MapError) as cm:
+                FmgImporter().import_map(FIXTURE)
+        self.assertEqual((cm.exception.code, cm.exception.detail), ("orphan_cell", {"id": 3}))
 
     def test_crlf_equivale(self):
         text = FIXTURE.read_text(encoding="utf-8").replace("\n", "\r\n")
@@ -159,6 +172,7 @@ class RealMapSmoke(unittest.TestCase):
         d = FmgImporter().import_map(REAL)
         self.assertEqual(validate(d, load_schema("gworld.map/0")), [])
         self.assertEqual(len(d["cells"]), 5120)
+        check_map(d)
 
 
 if __name__ == "__main__":
