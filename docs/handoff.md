@@ -10,7 +10,7 @@
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
 | **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-5 y PCK-8 hechas y revisadas (bloque MAP-5: 2 medios arreglados en `eb7ada7`, 8 leves en pending). Presupuesto de compactaciones: 1 |
-| **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
+| **Último punto estable** | Fusión de `main` con la release 0.1.0 (PR #3, `7e03ed1`) en la rama |
 | **Siguiente paso** | Fase 3 de 0.2: `532a13f` revisado (1 leve arreglado); `reviewed.sh`, push y el PR de 0.2 a `main` con la skill `pr` |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
