@@ -218,3 +218,10 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 - Recommendation: ok: PCK-8 para 0.2 con los 4 leves de pack.py, sin los 3 de canon.py
 - Answer: ok: PCK-8 solo con los 4 leves de pack.py
 - Answered: 2026-11-27
+
+## Q-25
+- Refs: MAP-1
+- Status: open
+- Asked: 2026-11-27
+- Question: MAP-1 a MAP-5 se reescriben desde map-generator/ de WMF, que no está en esta sesión. ¿a) me dejas adjuntar World-Maker-Fantasy (solo lectura), b) diseño gworld.map/0 solo desde ddd.md y lo ajusto en MAP-5, o c) otra cosa?
+- Recommendation: a) permitir adjuntar zeldris/World-Maker-Fantasy en solo lectura (add_repo); el modo automático lo ha denegado
