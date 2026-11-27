@@ -1,0 +1,8 @@
+{
+  "kind": "gworld.pack/0",
+  "id": "valle-brumas",
+  "version": "0.1.0",
+  "licence": {"spdx": "CC0-1.0"},
+  "canon": {"path": "canon", "sha256": "sha256:77fb53be6d5b2a0a0aeca8d772eb69580e8ee5dc1b2608238ba9ef4803bd9a4d"},
+  "rules": []
+}

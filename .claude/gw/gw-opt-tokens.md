@@ -17,13 +17,22 @@ las crea una vez; desde entonces son del proyecto.
 <!-- Lo que se ha visto que cuesta mucho en este proyecto (archivos grandes leídos enteros, salidas largas...). -->
 - `docs/ddd.md` (326 líneas) se leyó 12 veces en F0 (254k arrastrados): leerlo por secciones, `grep -n '^#'` y
   `sed -n` de la que haga falta; entero solo en la revisión.
-- Arranque fijo ~89k por llamada (75 % de la entrada en F0): conectores y MCP; quitar los que no se usen.
+- Arranque fijo ~89k por llamada (75 % en F0, 83 % en W1): conectores y MCP. En Claude en la nube no se pueden
+  desactivar (Q-17): no proponerlo otra vez.
+- `docs/plan.md` y `docs/ddd.md` leídos para escribir encargos (W1: 11 y 8 veces, ~540k): el encargo nombra la tarea
+  y los encabezados de sus secciones, y el `gw-worker` las lee; devuelve sus dudas antes de escribir código (Q-20).
 
 ## Ajustes en vigor
+
+- Esperar el CI con una sola orden en segundo plano que avisa al acabar, no con `send_later` ni recordatorios
+  repetidos (Q-18).
+- Revisiones: `/code-review` desde la sesión principal, sin envolverlo en un `gw-reviewer` Opus que solo lo lanza
+  (Q-19).
 
 - Ventana de compactación automática: `CLAUDE_CODE_AUTO_COMPACT_WINDOW` en `.claude/settings.json`.
 
 ## Referencias medidas
 
 <!-- Cifras medidas con las que comparar: fecha, sesión, contexto medio, llamadas, total. -->
+- 2026-11-27, W1: 137 llamadas, contexto medio 107k, techo 152k, 14,6 M de entrada (98 % caché); subagentes 0,74 M.
 - 2026-11-26, F0: 82 llamadas, contexto medio 118k, techo 151k, 9,7 M de entrada (98 % caché); subagentes 1,5 M.

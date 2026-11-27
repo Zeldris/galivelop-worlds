@@ -1,0 +1,34 @@
+{
+  "$schema": "gart-subset",
+  "title": "gworld.pack/0",
+  "description": "Manifiesto de un paquete de mundo. Licencia y huella del canon son obligatorias (invariante 8). Que la huella cuadre con el canon real lo comprueba load_pack (PCK-4), no este esquema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "id", "version", "licence", "canon", "rules"],
+  "properties": {
+    "kind": {"const": "gworld.pack/0"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$", "maxLength": 64},
+    "version": {"type": "string", "minLength": 1},
+    "licence": {
+      "description": "SPDX o texto (al menos uno; lo exige load_pack, pues el subconjunto no tiene anyOf) y condiciones opcionales.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "spdx": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1},
+        "conditions": {"type": "string"}
+      }
+    },
+    "canon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "description": "Ruta relativa al paquete."},
+        "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "rules": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}

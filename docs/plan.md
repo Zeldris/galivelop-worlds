@@ -26,15 +26,15 @@ y a grun. Si el acceso al GVE llega antes, 0.2 y 0.3 se pueden intercambiar.
 
 Lo decide: tests. Invariantes: 4, 5, 8, 9 y 13.
 
-- [ ] PCK-1 Esqueleto del paquete `gworld/` (Python ≥ 3.10, solo stdlib), `pyproject.toml` con extras vacíos, tests
+- [x] PCK-1 Esqueleto del paquete `gworld/` (Python ≥ 3.10, solo stdlib), `pyproject.toml` con extras vacíos, tests
   con `unittest` y su orden en el check (`relatedTests` y `testMap` de `.claude/gw.json`).
-- [ ] PCK-2 Comprobación mínima propia de esquemas en formato gart (D4), a cambiar por la copia vendorizada de gart.
-- [ ] PCK-3 Esquemas `gworld.pack/0` y `gworld.canon/0`, con `required` para licencia y huella.
-- [ ] PCK-4 `load_pack(path) -> WorldPack`: estructura, licencia obligatoria, huella del canon (invariante 8).
-- [ ] PCK-5 Lector del canon de solo lectura: troceo por encabezados y ids de hecho derivados (ADR 0005; invariantes
+- [x] PCK-2 Comprobación mínima propia de esquemas en formato gart (D4), a cambiar por la copia vendorizada de gart.
+- [x] PCK-3 Esquemas `gworld.pack/0` y `gworld.canon/0`, con `required` para licencia y huella.
+- [x] PCK-4 `load_pack(path) -> WorldPack`: estructura, licencia obligatoria, huella del canon (invariante 8).
+- [x] PCK-5 Lector del canon de solo lectura: troceo por encabezados y ids de hecho derivados (ADR 0005; invariantes
   4 y 5).
-- [ ] PCK-6 Mundo de ejemplo mínimo, sin términos de Tarkor, y el `grep` del invariante 9.
-- [ ] PCK-7 Paquete de Tarkor de prueba que lee `docs/rpgtarkor/` de WMF sin escribir (D11) y exporta
+- [x] PCK-6 Mundo de ejemplo mínimo, sin términos de Tarkor, y el `grep` del invariante 9.
+- [x] PCK-7 Paquete de Tarkor de prueba que lee `docs/rpgtarkor/` de WMF sin escribir (D11) y exporta
   `gworld.canon/0`.
 
 ## 0.2 — W4 Mapas
@@ -47,6 +47,9 @@ Lo decide: tests. Invariante: 3.
 - [ ] MAP-4 Comprobador de mapas contra el canon, desde `map-generator/comprobar.py`.
 - [ ] MAP-5 Equivalencia con el `map-generator/` de WMF sobre `Helek_World.map` (sus 11 archivos de test como
   oráculo).
+- [ ] PCK-8 Barrido de leves de `gworld/pack.py` (retro W1, Q-24): `canon.path` `"."`/`"sub/.."` rechazado;
+  FIFO/socket como `PackError`; mensaje «fuera del canon» y nombres no UTF-8 como `PackError` en `canon_digest`;
+  `RecursionError` de `validate` con su propio error, no `bad_json`. Los leves de `gworld/canon.py` siguen aparte.
 
 ## 0.3 — W2 Comprobador
 
