@@ -95,13 +95,18 @@ class CanonTest(unittest.TestCase):
                 p.chmod(p.stat().st_mode | stat.S_IWUSR)
 
     def test_no_write_modes_in_module(self):
-        src = Path(__file__).resolve().parent.parent / "gworld" / "canon.py"
-        code = "\n".join(l for l in src.read_text(encoding="utf-8").splitlines())
-        # quita el docstring del módulo para no coincidir con su prosa
-        code = code.split('"""', 2)[2]
-        self.assertIsNone(re.search(r"open\([^)]*['\"][^'\"]*[wax+][^'\"]*['\"]", code))
-        self.assertNotIn("write_text", code)
-        self.assertNotIn("write_bytes", code)
+        # Invariante 4: ningún módulo del kit abre archivos en escritura. Cuando un
+        # módulo tenga que escribir artefactos derivados, se añade aquí con su motivo.
+        root = Path(__file__).resolve().parent.parent / "gworld"
+        for src in sorted(root.rglob("*.py")):
+            code = src.read_text(encoding="utf-8")
+            # quita el docstring del módulo para no coincidir con su prosa
+            if code.lstrip().startswith('"""'):
+                code = code.split('"""', 2)[2]
+            with self.subTest(module=str(src.relative_to(root))):
+                self.assertIsNone(re.search(r"open\([^)]*['\"][^'\"]*[wax+][^'\"]*['\"]", code))
+                self.assertNotIn("write_text", code)
+                self.assertNotIn("write_bytes", code)
 
     def test_index_valid(self):
         make(self.d, canon_files={"a.md": DOC, "sub/b.md": b"# B\nhola\n"})
