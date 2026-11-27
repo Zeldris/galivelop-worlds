@@ -2,6 +2,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from gworld.pack import PackError, WorldPack, canon_digest, load_pack
@@ -110,11 +111,20 @@ class PackTest(unittest.TestCase):
             canon_digest(self.d / "canon")
         self.assertEqual(cm.exception.code, "canon_outside")
 
-    def test_deeply_nested_json(self):
-        make(self.d, raw='{"rules":' + "[" * 100000 + "]" * 100000 + "}")
-        err = code_of(self, self.d)
+    def test_json_recursion_error_is_bad_json(self):
+        # Si json.loads se queda sin pila (depende de la versión de Python), es bad_json.
+        make(self.d, raw="{}")
+        with mock.patch("gworld.pack.json.loads", side_effect=RecursionError("maximum recursion depth")):
+            err = code_of(self, self.d)
         self.assertEqual(err.code, "bad_json")
         self.assertIn("demasiado anidado", str(err))
+
+    def test_deeply_nested_json_is_pack_error(self):
+        # Hay versiones de Python cuyo json.loads lo parsea (y falla el esquema) y otras que no:
+        # en las dos, el fallo es un PackError, nunca una RecursionError suelta.
+        make(self.d, raw='{"rules":' + "[" * 100000 + "]" * 100000 + "}")
+        err = code_of(self, self.d)
+        self.assertIn(err.code, {"bad_json", "schema"})
 
     @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "root lee igual")
     def test_unreadable_canon_file(self):
