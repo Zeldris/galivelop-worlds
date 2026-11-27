@@ -39,7 +39,7 @@ Cuatro pasos, cada uno con su commit:
    - `solo-linda` → `only-borders` (`zone`, `with`).
    - `lindan` → `borders` (`a`, `b`).
    - `cierra-por` → `closes-by` (`zone`, `edge`, `by`, `min`; franjas de 10 km, `strip` opcional).
-   - `adelgaza` → `narrows` (`zone`, `toward`, `between`, `and`, `max`; cuartos a lo largo del eje de `toward`).
+   - `adelgaza` → `narrows` (`zone`, `toward`, `between`, `and` (listas de zonas), `max`; cuartos a lo largo del eje de `toward`).
    - `corredor` → `corridor` (`from`: provincia, `to`, `along`, `side`): Dijkstra multi-origen por tierra, como
      `comprobar.py:188-227`.
    - `dentro-de` → `inside` (`landmass`, `zones`).
@@ -66,7 +66,7 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
   dan área 200; un anillo con hueco resta el hueco; `unitKm` 2 multiplica el área por 4.
 - [x] Cada tipo de regla tiene un test que pasa y otro que falla con su detalle, sobre mapas hechos a mano, y un
   test por dirección generalizada (al menos `side-of` y `order` en los cuatro sentidos, con `yDown` verdadero y falso).
-- [ ] Humo, si existe WMF: `Helek_World.map` importado y las reglas convertidas de Tarkor dan las 13 reglas y las 9
+- [x] Humo, si existe WMF: `Helek_World.map` importado y las reglas convertidas de Tarkor dan las 13 reglas y las 9
   medidas en `ok` y `?` en las 3 sin decidir; si alguna sale `MAL`, se apunta con su valor para MAP-5 en vez de
   forzarla.
 
@@ -74,7 +74,7 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 
 - `gworld/schemas/maprules-0.json`, `gworld/schemas/pack-0.json`, `gworld/schemas/__init__.py` (registro; `gworld/schema.py` no cambia)
 - `gworld/pack.py`, `gworld/geometry.py`, `gworld/maprules.py`
-- `tools/tarkor_maprules.py`
+- `tools/__init__.py`, `tools/tarkor_maprules.py`
 - `tests/test_maprules.py`, `tests/test_geometry.py`, `tests/test_pack.py`, `tests/test_tarkor_maprules.py`
 - `docs/plan.md`, `docs/handoff.md`, `docs/ddd.md` (artefacto nuevo)
 
@@ -105,6 +105,18 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
   de la provincia su zona en la capa de `to` y la mitad de `along` por el centroide de `along` en `side`; las
   medidas dicen `medido 1.600 km² (canon 1.560, ±3%)`; `edge` da `y mínima|máxima|x … de la tierra de <zona>: N km
   (<lado>)`; sin `height` una celda es agua y sin `seaLevel` vale 20; los detalles citan zonas por id.
+- 2026-11-27: paso 4 hecho: `tools/tarkor_maprules.py` (`convert(lore, canon, doc)`, `convert_dir(wmf)`, `main --wmf --out`).
+  Humo con Helek: 13 reglas y 9 medidas con `ok` True y 3 sin decidir con `ok` None; ninguna sale False, así que
+  no hay fallo conocido para MAP-5 (`KNOWN_FALSE` vacío en `tests/test_tarkor_maprules.py`). Conteos del contrato
+  iguales a los reales. Valores medidos (MAP-5 los compara con WMF): franjas y 82 < 226 < 332 < 412, Margen cierra
+  96% de 28 pares, corredor 35 km, adelgaza 0.73, área Llanuras 19.907, distancias 122 y 104 km. Interpretaciones:
+  los continentes no tienen nombre en FMG: Berig es la masa con la región «Cristal Helado» y Vaelira la otra (como
+  `importar.py`); `oeste-de` es siempre `side` west; `costa-a-costa` es `west-east` (el único uso de WMF);
+  `borde-norte` → `edge` north; `forma` → `shape` sobre la masa; los ids de las medidas se generan
+  (`area-<región>`, `extent-<zona>`, `distance-<lore>`). **Cambio en el motor (hueco del paso 3):** en `narrows`,
+  `between` y `and` pasan de zona a lista de zonas (unión de sus celdas, como `entre` e `y` de WMF): la regla
+  `margen-se-adelgaza` tiene dos regiones en `entre` y no se podía expresar; `gworld/maprules.py` (`PARAMS`,
+  `_narrows`) y las llamadas de `tests/test_maprules.py` actualizadas. `tools/__init__.py` vacío para importar el módulo.
 
 ## Verification
 
