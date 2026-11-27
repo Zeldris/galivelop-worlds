@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 (W4 Mapas) empezada: `main` traído; MAP-1 bloqueada por Q-25 (sin acceso a WMF en la sesión: `add_repo` denegado por el modo automático); PCK-8 en curso con un subagente `gw-worker` |
+| **Fase / tarea** | 0.2 (W4 Mapas) empezada: `main` traído; MAP-1 bloqueada por Q-25 (sin acceso a WMF en la sesión: `add_repo` denegado por el modo automático); PCK-8 hecha (`428053d`: `canon_outside` para la raíz, `canon_special`, `canon_name`, `too_deep`) |
 | **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
-| **Siguiente paso** | Revisar y subir el commit de PCK-8; con la respuesta a Q-25 (`docs/questions.md`), MAP-1 (esquema `gworld.map/0`) |
+| **Siguiente paso** | Con la respuesta a Q-25 (`docs/questions.md`), MAP-1 (esquema `gworld.map/0`) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
