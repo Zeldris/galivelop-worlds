@@ -63,7 +63,7 @@ PARAMS: dict[str, dict[str, Param]] = {
     "borders": {"a": _zone(), "b": _zone()},
     "closes-by": {"zone": _zone(), "edge": Param("dir", CARDINAL), "by": _zone(), "min": Param("number"),
                   "strip": Param("number", required=False)},
-    "narrows": {"zone": _zone(), "toward": Param("dir", CARDINAL), "between": _zone(), "and": _zone(),
+    "narrows": {"zone": _zone(), "toward": Param("dir", CARDINAL), "between": Param("zones"), "and": Param("zones"),
                 "max": Param("number")},
     "corridor": {"from": _zone("province"), "to": _zone(), "along": _zone(), "side": Param("dir", CARDINAL)},
     "inside": {"landmass": _zone("landmass"), "zones": Param("zones")},
@@ -439,8 +439,8 @@ def _narrows(m: _Map, r: dict, tol: float):
     if not zone:
         return _no_land(r["zone"])
     sides = []
-    for z in (r["between"], r["and"]):
-        pts = [m.pt(i) for i in m.land_of(z)]
+    for zs in (r["between"], r["and"]):  # cada lado es la union de sus zonas, como `entre` e `y` de WMF
+        pts = [m.pt(i) for z in zs for i in m.land_of(z)]
         if not pts:
             return False, "un lado sin celdas"
         sides.append(pts)

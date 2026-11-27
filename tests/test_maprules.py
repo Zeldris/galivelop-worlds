@@ -39,7 +39,7 @@ VALID = [
     rule("ob", "only-borders", zone="region:1", **{"with": ["region:2"]}),
     rule("bs", "borders", a="region:1", b="region:2"),
     rule("cb", "closes-by", zone="region:1", edge="north", by="region:2", min=2, strip=10),
-    rule("n", "narrows", zone="region:1", toward="east", between="region:1", max=3, **{"and": "region:2"}),
+    rule("n", "narrows", zone="region:1", toward="east", between=["region:1"], max=3, **{"and": ["region:2"]}),
     rule("co", "corridor", to="region:2", along="landmass:1", side="north", **{"from": "province:1"}),
     rule("i", "inside", landmass="landmass:1", zones=["region:1", "region:2"]),
     rule("nl", "no-land-outside", landmasses=["landmass:1"], name="Isla"),
@@ -349,7 +349,7 @@ class CheckRulesTest(unittest.TestCase):
     def test_narrows(self):
         d = grid(["AAAAAAAA", "ZZZZZZZZ", "BBZZZZZZ", "BBZZZZZZ", "BBBBBBBB"],
                  {"A": ["region:1"], "B": ["region:2"], "Z": ["region:3"]})
-        base = dict(zone="region:3", between="region:1", **{"and": "region:2"})
+        base = dict(zone="region:3", between=["region:1"], **{"and": ["region:2"]})
         (res,) = check_rules(d, rules(rule("n", "narrows", toward="west", max=0.7, **base)))
         self.assertTrue(res.ok)
         self.assertRegex(res.detail, r"^grosor por cuartos O→E: 20, \d+, \d+, \d+ km; oeste/centro = 0\.\d\d "
@@ -360,11 +360,11 @@ class CheckRulesTest(unittest.TestCase):
 
     def test_narrows_sin_lado_y_sin_cuarto(self):
         d = grid([".ab."], Z)
-        self.one(d, rule("n", "narrows", zone="region:1", toward="west", between="region:2", max=1,
-                         **{"and": "region:3"}), False, "un lado sin celdas")
+        self.one(d, rule("n", "narrows", zone="region:1", toward="west", between=["region:2"], max=1,
+                         **{"and": ["region:3"]}), False, "un lado sin celdas")
         e = grid(["AZB"], {"A": ["region:1"], "B": ["region:2"], "Z": ["region:3"]})
-        self.one(e, rule("n", "narrows", zone="region:3", toward="west", between="region:1", max=1,
-                         **{"and": "region:2"}), False, "un cuarto sin celdas")
+        self.one(e, rule("n", "narrows", zone="region:3", toward="west", between=["region:1"], max=1,
+                         **{"and": ["region:2"]}), False, "un cuarto sin celdas")
 
     def test_corridor(self):
         d = grid([".....", ".ABB.", "..CC."], {"A": ["landmass:1", "region:1", "province:1"],
