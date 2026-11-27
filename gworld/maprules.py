@@ -493,7 +493,7 @@ def _corridor(m: _Map, r: dict, tol: float):
         return False, "la provincia no tiene tierra"
     to, along, side = r["to"], r["along"], r["side"]
     layer = m.layer[to]
-    # Paridad con WMF: si la celda de partida no tiene zona en la capa, home es None y la «region 0» es pisable.
+    # Paridad con WMF (Q-33, a): si la celda de partida no tiene zona en la capa, home es None y la «region 0» es pisable.
     home = m.region_of(min(start), layer)
     alongc = m.land_of(along)
     if not alongc:

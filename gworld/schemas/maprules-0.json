@@ -15,7 +15,7 @@
       "items": {
         "$ref": "#/$defs/rule",
         "properties": {
-          "type": {"enum": ["order", "side-of", "border", "coast-to-coast", "only-borders", "borders", "closes-by", "narrows", "corridor", "inside", "no-land-outside", "area", "extent", "distance"]}
+          "type": {"description": "Tipo de regla. corridor: la celda de partida de from fija la region de su capa; si no tiene zona en esa capa (region 0 de WMF), las celdas de tierra sin zona en esa capa son pisables (paridad con WMF, Q-33).", "enum": ["order","order", "side-of", "border", "coast-to-coast", "only-borders", "borders", "closes-by", "narrows", "corridor", "inside", "no-land-outside", "area", "extent", "distance"]}
         }
       }
     },
