@@ -5,7 +5,6 @@ hay WMF (``GW_WMF_DIR`` o ``../World-Maker-Fantasy`` junto al repo).
 """
 
 import json
-import os
 import tempfile
 import contextlib
 import io
@@ -18,7 +17,6 @@ from gworld.maps import FmgImporter, MapError
 from tools.tarkor_maprules import convert, convert_dir, main
 from tests.wmf import wmf_dir as locate_wmf
 
-ROOT = Path(__file__).resolve().parent.parent
 SHA = "sha256:" + "ab" * 32
 FAKE = {
     "origin": {"sha256": SHA},

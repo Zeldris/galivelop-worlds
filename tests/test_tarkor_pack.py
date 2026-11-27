@@ -16,7 +16,6 @@ from gworld.canon import canon_index
 from gworld.pack import canon_digest, load_pack
 from tests.wmf import wmf_dir
 
-ROOT = Path(__file__).resolve().parent.parent
 
 
 def wmf_canon() -> Path | None:
