@@ -64,7 +64,7 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 - [x] `gworld.maprules/0` valida; `bind` falla con cada código y su id; `load_pack` con y sin `mapRules`.
 - [x] Geometría: bloque 2×2 de celdas cuadradas de 10 da 1 polígono, área 400 y envolvente (20, 20); celdas 0 y 3
   dan área 200; un anillo con hueco resta el hueco; `unitKm` 2 multiplica el área por 4.
-- [ ] Cada tipo de regla tiene un test que pasa y otro que falla con su detalle, sobre mapas hechos a mano, y un
+- [x] Cada tipo de regla tiene un test que pasa y otro que falla con su detalle, sobre mapas hechos a mano, y un
   test por dirección generalizada (al menos `side-of` y `order` en los cuatro sentidos, con `yDown` verdadero y falso).
 - [ ] Humo, si existe WMF: `Helek_World.map` importado y las reglas convertidas de Tarkor dan las 13 reglas y las 9
   medidas en `ok` y `?` en las 3 sin decidir; si alguna sale `MAL`, se apunta con su valor para MAP-5 en vez de
@@ -98,6 +98,13 @@ resolver `source` a ids de hecho automáticamente (`facts` lo rellena quien escr
 - 2026-11-27: paso 2 hecho: `gworld/geometry.py` con `rings`, `polygons`, `area_km2` y `extent_km` (sobre el doc, en km);
   anillos en orden del menor vértice de salida, cada uno por la salida de mayor índice (como WMF), exteriores por
   `(min punto, longitud)`; dos celdas que solo comparten un vértice salen en un único anillo en ocho.
+- 2026-11-27: paso 3 hecho: `check_rules(doc, rules)` y `RuleResult(id, type, ok, detail)` en `gworld/maprules.py`
+  (llama a `bind`; `rules` y luego `undecided`). Diferencias con WMF decididas: zona sin celdas de tierra da `ok`
+  falso con `<zona> sin celdas de tierra` (WMF lanza ValueError); `closes-by` y `narrows` admiten las cuatro
+  direcciones y `strip` (por defecto 10 km) corta en la coordenada a lo largo del borde; `corridor` toma como region
+  de la provincia su zona en la capa de `to` y la mitad de `along` por el centroide de `along` en `side`; las
+  medidas dicen `medido 1.600 km² (canon 1.560, ±3%)`; `edge` da `y mínima|máxima|x … de la tierra de <zona>: N km
+  (<lado>)`; sin `height` una celda es agua y sin `seaLevel` vale 20; los detalles citan zonas por id.
 
 ## Verification
 
