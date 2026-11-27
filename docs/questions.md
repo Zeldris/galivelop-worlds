@@ -221,7 +221,9 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 
 ## Q-25
 - Refs: MAP-1
-- Status: open
+- Status: answered
 - Asked: 2026-11-27
 - Question: MAP-1 a MAP-5 se reescriben desde map-generator/ de WMF, que no está en esta sesión. ¿a) me dejas adjuntar World-Maker-Fantasy (solo lectura), b) diseño gworld.map/0 solo desde ddd.md y lo ajusto en MAP-5, o c) otra cosa?
 - Recommendation: a) permitir adjuntar zeldris/World-Maker-Fantasy en solo lectura (add_repo); el modo automático lo ha denegado
+- Answer: a
+- Answered: 2026-11-27
