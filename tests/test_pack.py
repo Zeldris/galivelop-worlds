@@ -125,6 +125,23 @@ class PackTest(unittest.TestCase):
         make(self.d, raw='{"rules":' + "[" * 100000 + "]" * 100000 + "}")
         err = code_of(self, self.d)
         self.assertIn(err.code, {"bad_json", "schema"})
+        if err.code == "bad_json":
+            self.assertIn("demasiado anidado", str(err))
+        else:
+            self.assertIn("gworld.pack/0", str(err))
+
+    def test_unreadable_subdir_raises(self):
+        make(self.d)
+        err = OSError(13, "Permission denied", str(self.d / "canon" / "sub"))
+
+        def fake_walk(top, followlinks=False, onerror=None):
+            onerror(err)
+            return iter(())
+        with mock.patch("gworld.pack.os.walk", fake_walk):
+            with self.assertRaises(PackError) as cm:
+                canon_digest(self.d / "canon")
+        self.assertEqual(cm.exception.code, "unreadable")
+        self.assertIn("Permission denied", str(cm.exception))
 
     @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "root lee igual")
     def test_unreadable_canon_file(self):

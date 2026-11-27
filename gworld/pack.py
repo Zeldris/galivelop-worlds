@@ -71,7 +71,10 @@ def canon_digest(path: "str | os.PathLike") -> str:
         return "sha256:" + hashlib.sha256(_read(p)).hexdigest()
     base = p.resolve()
     entries: list[tuple[bytes, Path]] = []
-    for dirpath, dirnames, filenames in os.walk(p, followlinks=False):
+    def onerror(e: OSError) -> None:
+        raise PackError("unreadable", f"no se puede leer {e.filename}: {e}") from e
+
+    for dirpath, dirnames, filenames in os.walk(p, followlinks=False, onerror=onerror):
         for d in dirnames:
             if Path(dirpath, d).is_symlink():
                 raise PackError("canon_outside", f"el canon contiene un enlace a directorio: {Path(dirpath, d)}")

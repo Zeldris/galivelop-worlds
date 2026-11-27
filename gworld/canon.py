@@ -16,7 +16,7 @@ reducen a una; se quitan las líneas en blanco del principio y del final. Se man
 
 Huella del hecho: ``"sha256:" + sha256(texto normalizado en UTF-8)``.
 
-Id: ``"fact:" + sha256(archivo \\0 encabezados unidos por \\0 \\0 n \\0 huella_hex)[:32]``, con
+Id: ``"fact:" + sha256(JSON [archivo, [encabezados], n, huella_hex])[:32]``, con
 ``archivo`` la ruta relativa POSIX, ``n`` el número de orden (desde 0) entre las secciones del mismo
 archivo con la misma ruta de encabezados (así los encabezados repetidos dan ids distintos y
 estables). Cambiar el texto de una sección cambia solo su id; ``n`` solo cambia si se añade o quita
@@ -27,12 +27,13 @@ Fallos como ``PackError`` (``gworld.pack``): ``unreadable`` (E/S), ``bad_encodin
 """
 
 import hashlib
+import json
 import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from gworld.pack import PackError, WorldPack
+from gworld.pack import PackError, WorldPack, canon_digest
 from gworld.schema import validate
 from gworld.schemas import load_schema
 
@@ -67,7 +68,7 @@ def normalize(text: str) -> str:
 
 
 def _fact_id(file: str, headings: tuple[str, ...], n: int, digest_hex: str) -> str:
-    key = "\0".join([file, "\0".join(headings), str(n), digest_hex])
+    key = json.dumps([file, list(headings), n, digest_hex], ensure_ascii=False)
     return "fact:" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:32]
 
 
@@ -112,7 +113,10 @@ def _files(path: Path) -> list[tuple[str, Path]]:
         return [(path.name, path)]
     base = path.resolve()
     found: list[tuple[str, Path]] = []
-    for dirpath, dirnames, filenames in os.walk(path, followlinks=False):
+    def onerror(e: OSError) -> None:
+        raise PackError("unreadable", f"no se puede leer {e.filename}: {e}") from e
+
+    for dirpath, dirnames, filenames in os.walk(path, followlinks=False, onerror=onerror):
         for name in filenames:
             f = Path(dirpath, name)
             if not name.endswith(".md") or not f.is_file():
@@ -129,7 +133,7 @@ def read_facts(path: "str | os.PathLike") -> tuple[Fact, ...]:
     facts: list[Fact] = []
     for rel, f in _files(Path(path)):
         try:
-            source = f.read_bytes().decode("utf-8")
+            source = f.read_bytes().decode("utf-8-sig")
         except OSError as e:
             raise PackError("unreadable", f"no se puede leer {f}: {e}") from e
         except UnicodeDecodeError as e:
@@ -148,6 +152,9 @@ def read_facts(path: "str | os.PathLike") -> tuple[Fact, ...]:
 
 def canon_index(pack: WorldPack) -> dict:
     """Índice ``gworld.canon/0`` del canon del paquete, validado contra su esquema."""
+    actual = canon_digest(pack.canon_path)
+    if actual != pack.ref.sha256:
+        raise PackError("canon_hash", f"la huella del canon no cuadra: esperada {pack.ref.sha256}, real {actual}")
     index = {
         "kind": "gworld.canon/0",
         "pack": {"id": pack.ref.id, "version": pack.ref.version, "sha256": pack.ref.sha256},

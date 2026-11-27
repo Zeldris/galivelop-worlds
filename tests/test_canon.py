@@ -4,6 +4,7 @@ import shutil
 import stat
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from gworld.canon import canon_index, normalize, read_facts
@@ -120,6 +121,41 @@ class CanonTest(unittest.TestCase):
         with self.assertRaises(PackError) as cm:
             read_facts(self.canon)
         self.assertEqual(cm.exception.code, "bad_encoding")
+        self.assertIn("no es UTF-8", str(cm.exception))
+
+    def test_fact_ids_unambiguous(self):
+        (self.canon / "x.md").write_bytes("texto\n\n#\ntexto\n".encode())
+        ids = [f.id for f in read_facts(self.canon) if f.file == "x.md"]
+        self.assertEqual(len(ids), 2)
+        self.assertEqual(len(set(ids)), 2)
+
+    def test_bom_ignored(self):
+        (self.canon / "x.md").write_bytes(b"# T\nhola\n")
+        a = tuple(f for f in read_facts(self.canon) if f.file == "x.md")
+        (self.canon / "x.md").write_bytes(b"\xef\xbb\xbf# T\nhola\n")
+        self.assertEqual(tuple(f for f in read_facts(self.canon) if f.file == "x.md"), a)
+        self.assertEqual(a[0].headings, ("T",))
+
+    def test_index_rejects_changed_canon(self):
+        make(self.d, canon_files={"a.md": b"# A\nhola\n"})
+        pack = load_pack(self.d)
+        (self.d / "canon" / "a.md").write_bytes(b"# A\ncambiado\n")
+        with self.assertRaises(PackError) as cm:
+            canon_index(pack)
+        self.assertEqual(cm.exception.code, "canon_hash")
+        self.assertIn("huella del canon", str(cm.exception))
+
+    def test_unreadable_subdir_raises(self):
+        err = OSError(13, "Permission denied", str(self.canon / "sub"))
+
+        def fake_walk(top, followlinks=False, onerror=None):
+            onerror(err)
+            return iter(())
+        with mock.patch("gworld.canon.os.walk", fake_walk):
+            with self.assertRaises(PackError) as cm:
+                read_facts(self.canon)
+        self.assertEqual(cm.exception.code, "unreadable")
+        self.assertIn("Permission denied", str(cm.exception))
 
 
 if __name__ == "__main__":

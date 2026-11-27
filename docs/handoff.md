@@ -10,8 +10,8 @@
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
 | **Fase / tarea** | W0 cerrada y fusionada en `main` (PR #1, `ea214e2`, CI en verde, fusión confirmada por la persona el 2026-11-27). W1 (versión 0.1): PCK-1 a PCK-7 hechos |
-| **Último punto estable** | `test(PCK-7): paquete de Tarkor de prueba sobre docs/rpgtarkor/ de WMF, solo lectura` |
-| **Siguiente paso** | W1 cerrada: revisión del bloque W1 (fase 1 de AGENTS.md) y luego PR de 0.1 a `main` |
+| **Último punto estable** | `fix(PCK-5): arreglos de la revisión del resto del bloque W1` |
+| **Siguiente paso** | Fase 2 de AGENTS.md: gw-opt-tokens y retro, presentarlas a la persona; luego reviewed.sh y PR de 0.1 a main |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
