@@ -227,3 +227,10 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 - Recommendation: a) permitir adjuntar zeldris/World-Maker-Fantasy en solo lectura (add_repo); el modo automático lo ha denegado
 - Answer: a
 - Answered: 2026-11-27
+
+## Q-26
+- Refs: MAP-5
+- Status: open
+- Asked: 2026-11-27
+- Question: Caminos: WMF (consultar.py:321-323) va solo por tierra por defecto; Topology.path va por todas las celdas salvo que se pase passable. a) por defecto solo tierra, como WMF; b) por defecto todas y MAP-5 pasa el filtro de tierra.
+- Recommendation: b) Mantener passable=None = todas las celdas (sirve también para rutas por mar) y que MAP-5 pase passable de tierra al comparar con WMF.
