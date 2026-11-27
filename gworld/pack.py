@@ -185,5 +185,7 @@ def _map_rules_path(root: Path, rel: str) -> Path:
     try:
         load_map_rules(f)
     except MapError as e:
+        if e.code == "unreadable":
+            raise PackError("unreadable", f"no se puede leer {rel!r}: {e}", e.detail) from e
         raise PackError("map_rules_invalid", f"las reglas de mapa {rel!r} no valen: {e}", e.detail) from e
     return f

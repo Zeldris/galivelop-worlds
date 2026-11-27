@@ -31,3 +31,9 @@ Lo que queda abierto; la bitácora solo apunta aquí. Se añade y se quita en es
 - Leve (revisión de bloque MAP-3): `gworld/topology.py` `check_map` no detecta una vecina repetida en `neighbours` (el esquema no tiene `uniqueItems`); añadir `duplicate_neighbour` con su test.
 - Leve (revisión de bloque MAP-3): `tests/test_topology.py` `test_empate_se_decide_por_id` pasa también sin la regla de desempate (la cubre `path(4, 0)` en `test_camino_mas_corto`); buscarle un caso que dependa de ella.
 - Repo Galivelop-workflow (retro W1, Q-18/Q-19/Q-21): `ci-status.py --wait` para esperar el CI en segundo plano; `gw-orchestrate-dealer` sin envolver `/code-review` en un `gw-reviewer` Opus; `check.sh`/`ci-local.py` con los tests en cada versión de Python de la matriz instalada en local (el CI rojo de PCK-4 por 3.11/3.12).
+
+## Leve (revisión de bloque MAP-4)
+
+- Leve (revisión de bloque MAP-4): `tools/tarkor_maprules.py`: una referencia dict de clase desconocida (ni `continente` ni `provincia`) se lee como provincia.
+- Leve (revisión de bloque MAP-4): `tools/tarkor_maprules.py`: una clave ausente en `lore.json` o `canon.json` da `KeyError` sin el id de la regla; convertirlo en `MapError` con el id.
+- Observación (revisión de bloque MAP-4): en `geometry.polygons` una primera celda de área 0 deja todo como huecos (igual que WMF).

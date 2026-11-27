@@ -80,6 +80,8 @@ UNDECIDED_TYPES = ("edge", "area", "extent", "distance", "shape")
 # Medidas de canon.json: exactamente uno de `value` y `range` (en `undecided`, como mucho uno).
 # `value` es un numero (area, distance) o un par [ancho, alto] (extent); `range` es un par [lo, hi].
 MEASURES = frozenset({"area", "extent", "distance"})
+# Parametros que se comparan en la capa de otro (el motor mira la zona del vecino en la capa de `a`).
+SAME_LAYER = {"closes-by": (("zone", "by"),), "borders": (("a", "b"),), "only-borders": (("zone", "with"),)}
 COMMON = frozenset({"id", "type", "text", "source", "facts"})
 
 
@@ -106,6 +108,10 @@ def load_map_rules(path: "str | Path") -> dict:
         e = errors[0]
         raise MapError("schema", f"{p.name} no cumple gworld.maprules/0: {e.path or '/'} {e.code} {e.params}",
                        [(x.path, x.code) for x in errors])
+    tol = rules.get("tolerance")
+    if tol is not None and not _is_num(tol):
+        raise MapError("schema", f"{p.name} no cumple gworld.maprules/0: /tolerance no es un numero finito",
+                       [("/tolerance", "finite")])
     seen: set[str] = set()
     for r in _all(rules):
         if r["id"] in seen:
@@ -119,7 +125,9 @@ def _all(rules: dict) -> list[dict]:
 
 
 def _is_num(v: Any) -> bool:
-    return isinstance(v, (int, float)) and not isinstance(v, bool)
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return False
+    return isinstance(v, int) or math.isfinite(v)
 
 
 def _is_int(v: Any) -> bool:
@@ -155,6 +163,18 @@ def _bind_rule(r: dict, allowed: tuple[str, ...], layers: dict[str, str], places
     for name, p in table.items():
         if name in r:
             _bind_param(rid, name, p, r[name], layers, places)
+    if typ == "closes-by":
+        if not r.get("strip", 10) > 0:
+            raise _fail("bad_params", "strip debe ser > 0", rid, param="strip", value=r["strip"])
+        if r["min"] > 1:
+            raise _fail("bad_params", "min debe estar entre 0 y 1", rid, param="min", value=r["min"])
+    for a, b in SAME_LAYER.get(typ, ()):
+        if a in r and b in r:
+            want = layers[r[a]]
+            for z in (r[b] if isinstance(r[b], list) else [r[b]]):
+                if layers[z] != want:
+                    raise _fail("wrong_layer", f"{b}: {z!r} es de la capa {layers[z]!r} y {a} de {want!r}", rid,
+                                param=b, ref=z, layer=layers[z], expected=[want])
 
 
 def _bind_measure(r: dict, typ: str, rid: str, decided: bool) -> None:
@@ -172,6 +192,8 @@ def _bind_measure(r: dict, typ: str, rid: str, decided: bool) -> None:
                         rid, param="value", value=v)
     if "range" in r:
         v = r["range"]
+        if typ == "extent":
+            raise _fail("bad_params", "extent no admite range (solo value [ancho, alto])", rid, param="range", value=v)
         if not (isinstance(v, list) and len(v) == 2 and all(_is_num(x) and x >= 0 for x in v) and v[0] <= v[1]):
             raise _fail("bad_params", "range debe ser un par [lo, hi] con lo <= hi", rid, param="range", value=v)
 
@@ -268,7 +290,7 @@ class _Map:
         self.y_down = geo.get("yDown", True)
         sea = doc.get("seaLevel", SEA_LEVEL)
         self.cells = {c["id"]: c for c in doc["cells"]}
-        self.land = {i for i, c in self.cells.items() if c.get("height", 0) >= sea}
+        self.land = {i for i, c in self.cells.items() if "height" in c and c["height"] >= sea}
         self.layer = {z["id"]: z["layer"] for z in doc.get("zones", [])}
         self.members: dict[str, list[int]] = {z: [] for z in self.layer}
         self.zone_in: dict[int, dict[str, str]] = {}
@@ -410,7 +432,7 @@ def _borders(m: _Map, r: dict, tol: float):
 
 
 def _closes_by(m: _Map, r: dict, tol: float):
-    edge, strip = r["edge"], r.get("strip") or 10
+    edge, strip = r["edge"], r.get("strip", 10)
     along = 1 - m.sign(edge)[0]  # coordenada a lo largo del borde
     layer = m.layer[r["zone"]]
     extreme: dict[int, int] = {}
@@ -471,7 +493,8 @@ def _corridor(m: _Map, r: dict, tol: float):
         return False, "la provincia no tiene tierra"
     to, along, side = r["to"], r["along"], r["side"]
     layer = m.layer[to]
-    home = m.region_of(start[0], layer)
+    # Paridad con WMF: si la celda de partida no tiene zona en la capa, home es None y la «region 0» es pisable.
+    home = m.region_of(min(start), layer)
     alongc = m.land_of(along)
     if not alongc:
         return _no_land(along)
@@ -547,12 +570,21 @@ def _within(v, r: dict, tol: float) -> bool:
     return abs(v - e) <= e * tol
 
 
+def _barren(m: _Map, r: dict) -> bool:
+    """True si la regla mide el area o la envolvente de una zona sin tierra."""
+    return r["type"] in ("area", "extent") and not m.land_of(r["zone"])
+
+
 def _measured(m: _Map, r: dict, tol: float):
+    if _barren(m, r):
+        return _no_land(r["zone"])
     v, text, unit = _measure(m, r)
     return _within(v, r, tol), f"medido {text} {unit} (canon {_expected(r)}, ±{tol:.0%})"
 
 
 def _measured_free(m: _Map, r: dict, tol: float):
+    if _barren(m, r):
+        return None, _no_land(r["zone"])[1]
     _, text, unit = _measure(m, r)
     canon = f", canon {_expected(r)}" if ("value" in r or "range" in r) else ""
     return None, f"medido {text} {unit}{canon}; sin decidir"

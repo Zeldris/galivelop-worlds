@@ -38,7 +38,7 @@ VALID = [
     rule("c", "coast-to-coast", zone="landmass:1", axis="west-east"),
     rule("ob", "only-borders", zone="region:1", **{"with": ["region:2"]}),
     rule("bs", "borders", a="region:1", b="region:2"),
-    rule("cb", "closes-by", zone="region:1", edge="north", by="region:2", min=2, strip=10),
+    rule("cb", "closes-by", zone="region:1", edge="north", by="region:2", min=0.5, strip=10),
     rule("n", "narrows", zone="region:1", toward="east", between=["region:1"], max=3, **{"and": ["region:2"]}),
     rule("co", "corridor", to="region:2", along="landmass:1", side="north", **{"from": "province:1"}),
     rule("i", "inside", landmass="landmass:1", zones=["region:1", "region:2"]),
@@ -50,7 +50,7 @@ VALID = [
 UNDECIDED = [
     rule("ue", "edge", landmass="landmass:1", side="south"),
     rule("ua", "area", zone="region:1"),
-    rule("ux", "extent", zone="region:1", range=[1, 2]),
+    rule("ux", "extent", zone="region:1", value=[1, 2]),
     rule("ud", "distance", places=[1, 2], value=5),
     rule("us", "shape"),
 ]
@@ -102,6 +102,28 @@ class BindTest(unittest.TestCase):
     def test_wrong_layer_in_list(self):
         self.fails(rules(rule("x", "no-land-outside", landmasses=["region:1"], name="n")), "wrong_layer", "x",
                    ref="region:1")
+
+    def test_extent_no_admite_range(self):
+        for rs in (rules(rule("x", "extent", zone="region:1", range=[1, 2])),
+                   rules(undecided=[rule("x", "extent", zone="region:1", range=[1, 2])])):
+            e = self.fails(rs, "bad_params", "x", param="range")
+            self.assertIn("extent no admite range", str(e))
+
+    def test_capa_del_vecino_igual_que_la_de_la_zona(self):
+        for r, param in ((rule("x", "closes-by", zone="region:1", edge="north", by="province:1", min=0.5), "by"),
+                         (rule("x", "borders", a="region:1", b="province:1"), "b"),
+                         (rule("x", "only-borders", zone="region:1", **{"with": ["region:2", "province:1"]}),
+                          "with")):
+            with self.subTest(param=param):
+                e = self.fails(rules(r), "wrong_layer", "x", param=param, ref="province:1", layer="province",
+                               expected=["region"])
+                self.assertIn("province", str(e))
+
+    def test_closes_by_strip_y_min(self):
+        base = dict(zone="region:1", edge="north", by="region:2")
+        for extra, param in (({"min": 0.5, "strip": 0}, "strip"), ({"min": 1.5}, "min")):
+            with self.subTest(param=param):
+                self.fails(rules(rule("x", "closes-by", **base, **extra)), "bad_params", "x", param=param)
 
     def test_missing_param(self):
         self.fails(rules(rule("x", "borders", a="region:1")), "bad_params", "x", missing=["b"])
@@ -188,6 +210,16 @@ class LoadTest(unittest.TestCase):
         self.assertEqual(e.detail["id"], "s")
         self.write(rules(VALID[1], VALID[1]))
         self.assertEqual(self.fails("duplicate_rule").detail["id"], "s")
+
+    def test_no_finitos(self):
+        self.write('{"kind": "gworld.maprules/0", "map": "%s", "tolerance": Infinity, "rules": []}' % SHA)
+        self.assertIn("/tolerance", str(self.fails("schema")))
+        self.write('{"kind": "gworld.maprules/0", "map": "%s", "rules": [{"id": "x", "type": "area", "text": "t", '
+                   '"source": "s", "zone": "region:1", "value": Infinity}]}' % SHA)
+        with self.assertRaises(MapError) as cm:
+            bind(load_map_rules(self.p), doc())
+        self.assertEqual(cm.exception.code, "bad_params")
+        self.assertIn("value debe ser un numero", str(cm.exception))
 
     def test_tolerance_default_documented(self):
         self.assertEqual(load_schema("gworld.maprules/0")["properties"]["tolerance"]["default"], 0.03)
@@ -424,6 +456,31 @@ class CheckRulesTest(unittest.TestCase):
         r = rule("a", "area", zone="region:1", value=1500)
         self.one(d, r, False, "medido 1.600 km² (canon 1.500, ±3%)")
         self.one(d, r, True, "medido 1.600 km² (canon 1.500, ±10%)", tol=0.1)
+
+    def test_area_extent_sin_tierra(self):
+        d = self.measure_map()
+        for c in d["cells"]:
+            c["height"] = 0
+        for t, v in (("area", 5), ("extent", [1, 1])):
+            self.one(d, rule("a", t, zone="region:1", value=v), False, "region:1 sin celdas de tierra")
+            (res,) = check_rules(d, rules(undecided=[rule("u", t, zone="region:1")]))
+            self.assertEqual((res.ok, res.detail), (None, "region:1 sin celdas de tierra"))
+
+    def test_celda_sin_height_es_agua(self):
+        d = self.measure_map()
+        d["seaLevel"] = 0
+        del d["cells"][5]["height"]
+        self.one(d, rule("a", "area", zone="region:1", value=1200), True, "medido 1.200 km² (canon 1.200, ±3%)")
+
+    def test_corridor_no_depende_del_orden_de_cells(self):
+        # La provincia cubre X (region 1) e Y (region 3); la de menor id manda: home = region 1 y Y no se pisa.
+        zs = {"x": ["landmass:1", "province:1", "region:1"], "y": ["landmass:1", "province:1", "region:3"],
+              "z": ["landmass:1", "region:2"]}
+        d = grid([".xyz."], zs)
+        r = rule("c", "corridor", to="region:2", along="landmass:1", side="north", **{"from": "province:1"})
+        self.one(d, r, False, "sin camino por tierra")
+        d["cells"].reverse()
+        self.one(d, r, False, "sin camino por tierra")
 
     def test_area_solo_tierra(self):
         d = self.measure_map()
