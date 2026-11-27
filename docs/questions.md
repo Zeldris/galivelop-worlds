@@ -272,3 +272,31 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 - Recommendation: b) Generalizar las direcciones (norte/sur/este/oeste en todos los tipos que tienen eje o lado): cuesta poco y un segundo mundo no depende de la geografía de Tarkor.
 - Answer: b
 - Answered: 2026-11-27
+
+## Q-31
+- Refs: MAP-5
+- Status: open
+- Asked: 2026-11-27
+- Question: Alcance de MAP-5 entre los 11 tests de map-generator: a) solo los de mapas del mundo (importar, medir, comprobar, lectura de consultar, medidas de visor); b) también consultar entero (celda por punto, frontera, costa, caminos por mar); c) los 11, edición y visor incluidos.
+- Recommendation: a) Los 4 de «mapas del mundo»: importar, medir, comprobar y la parte de lectura de consultar (vecinos, path, distance_km), más la comprobación de medidas de test_visor (:66). Los otros 6 (banco, editar, historial, trazos, zonas, exportar) son edición, UI, agente o exportación y no tienen sitio en gworld hoy.
+
+## Q-32
+- Refs: MAP-5
+- Status: open
+- Asked: 2026-11-27
+- Question: Fixture del oráculo: a) leer Helek_World.map y helek.json del clon de WMF y saltar los tests sin él (como ahora); b) copiar helek.json (1 MB) a tests/fixtures; c) copiar los dos (4 MB).
+- Recommendation: b) Copiar helek.json (1 MB) a tests/fixtures con su procedencia y la licencia de WMF: el CI no tiene el clon de WMF y hoy esos tests se saltan allí, así que la equivalencia solo se probaría en local. El .map (3 MB) se sigue leyendo de WMF si está; con helek.json basta para comprobar reglas, medidas y topología, y una prueba cruzada .map→gworld frente a helek.json corre donde estén los dos.
+
+## Q-33
+- Refs: MAP-5
+- Status: open
+- Asked: 2026-11-27
+- Question: corridor con región 0 (asunto abierto de MAP-4): a) paridad con WMF, las celdas sin provincia son pisables; b) no pisables; c) parámetro opcional con a) por defecto.
+- Recommendation: a) Paridad con WMF: una celda de tierra sin provincia (región 0) se puede pisar en corridor. MAP-5 es de equivalencia, y cambiarlo haría fallar reglas que en WMF pasan; se documenta en el esquema y, si un mundo lo necesita, se añade luego un parámetro.
+
+## Q-34
+- Refs: MAP-5
+- Status: open
+- Asked: 2026-11-27
+- Question: Lo que WMF manda a «revisar» al importar (40 marcadores, 610 burgs borrados): a) ignorarlo; b) darlo en un informe del import, fuera del mapa; c) guardarlo en gworld.map/0.
+- Recommendation: b) Llevar los marcadores automáticos y los burgs borrados a una lista de revisión en el informe de import (no al mapa): es lo que WMF pide a la persona que revise y no cambia el esquema gworld.map/0. a) sería perder ese aviso.
