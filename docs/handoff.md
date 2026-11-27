@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 (W4 Mapas) empezada: `main` traído; MAP-1 en curso con un subagente `gw-worker` (`opus`), con WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a); PCK-8 hecha (`428053d`: `canon_outside` para la raíz, `canon_special`, `canon_name`, `too_deep`) |
+| **Fase / tarea** | 0.2 (W4 Mapas) empezada: `main` traído; MAP-1 hecha (`f731aad`: `gworld/schemas/map-0.json`, celdas con vértices compartidos y zonas `<capa>:<n>`), con WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a); PCK-8 hecha (`428053d`: `canon_outside` para la raíz, `canon_special`, `canon_name`, `too_deep`) |
 | **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
-| **Siguiente paso** | Revisar y subir el commit de MAP-1 (esquema `gworld.map/0`); luego MAP-2 (importador FMG) |
+| **Siguiente paso** | MAP-2: `MapImporter` e importador FMG 1.137.6 desde `map-generator/importar.py` de WMF (`../World-Maker-Fantasy`), que produce `gworld.map/0` |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
