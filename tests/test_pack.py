@@ -92,6 +92,42 @@ class PackTest(unittest.TestCase):
         make(self.d / "pk", canon_files={}, canon_path="canon", sha="sha256:" + "0" * 64)
         self.assertEqual(code_of(self, self.d / "pk").code, "canon_outside")
 
+    def test_licence_only_conditions(self):
+        make(self.d, licence={"conditions": "x"})
+        e = code_of(self, self.d)
+        self.assertEqual(e.code, "schema")
+        self.assertIn("licence", str(e))
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "sin symlinks")
+    def test_dir_symlink_in_canon(self):
+        make(self.d)
+        (self.d / "otro").mkdir()
+        try:
+            os.symlink(self.d / "otro", self.d / "canon" / "enlace", target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("el SO no permite symlinks")
+        with self.assertRaises(PackError) as cm:
+            canon_digest(self.d / "canon")
+        self.assertEqual(cm.exception.code, "canon_outside")
+
+    def test_deeply_nested_json(self):
+        make(self.d, raw='{"rules":' + "[" * 100000 + "]" * 100000 + "}")
+        self.assertEqual(code_of(self, self.d).code, "bad_json")
+
+    @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "root lee igual")
+    def test_unreadable_canon_file(self):
+        make(self.d)
+        f = self.d / "canon" / "a.md"
+        sha = canon_digest(self.d / "canon")
+        make(self.d, sha=sha)
+        f.chmod(0)
+        self.addCleanup(f.chmod, 0o644)
+        self.assertEqual(code_of(self, self.d).code, "unreadable")
+
+    def test_canon_path_nul(self):
+        make(self.d, canon_path="canon\0x", sha="sha256:" + "0" * 64)
+        self.assertEqual(code_of(self, self.d).code, "canon_outside")
+
     def test_canon_missing(self):
         make(self.d, canon_path="no-existe", sha="sha256:" + "0" * 64)
         self.assertEqual(code_of(self, self.d).code, "canon_missing")

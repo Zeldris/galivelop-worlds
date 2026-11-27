@@ -116,8 +116,8 @@ def _check(node: Any, root: Any, where: str) -> None:
             if not _is_num(value):
                 raise SchemaError(f"{key} debe ser un número en {here}")
         elif key == "$ref":
-            if not isinstance(value, str) or not (value == "#" or value.startswith("#/")):
-                raise SchemaError(f"$ref solo puede ser local ('#...'): {value!r} en {here}")
+            if not isinstance(value, str) or not (value == "#" or re.fullmatch(r"#/\$defs/[^/]+", value)):
+                raise SchemaError(f"$ref local: solo puede ser '#' o '#/$defs/<nombre>': {value!r} en {here}")
             seen = set()
             target = _resolve(root, value)
             ref = value

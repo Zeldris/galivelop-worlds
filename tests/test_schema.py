@@ -138,6 +138,12 @@ class RefTest(unittest.TestCase):
             with self.assertRaisesRegex(SchemaError, "local"):
                 check_schema({"$ref": ref})
 
+    def test_ref_only_to_root_or_defs(self):
+        for s in ({"enum": [{"foo": 1}], "$ref": "#/enum/0"},
+                  {"properties": {"type": {"type": "string"}}, "$ref": "#/properties"}):
+            with self.assertRaisesRegex(SchemaError, r"'#' o '#/\$defs/<nombre>'"):
+                check_schema(s)
+
     def test_unresolved_ref(self):
         with self.assertRaisesRegex(SchemaError, "sin destino"):
             check_schema({"$ref": "#/$defs/nope"})

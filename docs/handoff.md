@@ -10,7 +10,7 @@
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
 | **Fase / tarea** | W0 cerrada y fusionada en `main` (PR #1, `ea214e2`, CI en verde, fusión confirmada por la persona el 2026-11-27). W1 (versión 0.1) en curso: PCK-1 a PCK-4 hechos |
-| **Último punto estable** | `feat(PCK-4): load_pack con licencia obligatoria y huella del canon` |
+| **Último punto estable** | `fix(PCK-4): arreglos de la revisión de bloque de W1` |
 | **Siguiente paso** | W1: PCK-5 (lector del canon de solo lectura), repartido a un `gw-worker` con `sonnet` (`docs/plan.md`) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 

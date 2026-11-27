@@ -1,7 +1,7 @@
 """Carga de un paquete de mundo: ``load_pack(path) -> WorldPack`` (PCK-4, invariante 8).
 
 No escribe nada. Fallos como ``PackError`` con ``code`` estable: ``no_manifest``, ``bad_json``,
-``schema``, ``canon_outside``, ``canon_missing``, ``canon_hash``.
+``schema``, ``canon_outside``, ``canon_missing``, ``canon_hash``, ``unreadable`` (error de E/S).
 """
 
 import hashlib
@@ -50,6 +50,13 @@ def _inside(p: Path, root: Path) -> bool:
     return p == root or root in p.parents
 
 
+def _read(f: Path) -> bytes:
+    try:
+        return f.read_bytes()
+    except OSError as e:
+        raise PackError("unreadable", f"no se puede leer {f}: {e}") from e
+
+
 def canon_digest(path: "str | os.PathLike") -> str:
     """Huella del canon, ``"sha256:<hex>"``.
 
@@ -61,11 +68,13 @@ def canon_digest(path: "str | os.PathLike") -> str:
     """
     p = Path(path)
     if p.is_file():
-        return "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest()
+        return "sha256:" + hashlib.sha256(_read(p)).hexdigest()
     base = p.resolve()
     entries: list[tuple[bytes, Path]] = []
     for dirpath, dirnames, filenames in os.walk(p, followlinks=False):
-        dirnames[:] = [d for d in dirnames if not (Path(dirpath, d).is_symlink())]
+        for d in dirnames:
+            if Path(dirpath, d).is_symlink():
+                raise PackError("canon_outside", f"el canon contiene un enlace a directorio: {Path(dirpath, d)}")
         for name in filenames:
             f = Path(dirpath, name)
             if not f.is_file():
@@ -77,7 +86,7 @@ def canon_digest(path: "str | os.PathLike") -> str:
     entries.sort(key=lambda e: e[0])
     h = hashlib.sha256()
     for rel, f in entries:
-        h.update(rel + b"\0" + hashlib.sha256(f.read_bytes()).digest())
+        h.update(rel + b"\0" + hashlib.sha256(_read(f)).digest())
     return "sha256:" + h.hexdigest()
 
 
@@ -88,19 +97,33 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
         raise PackError("no_manifest", f"no hay pack.json en {root}")
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (ValueError, UnicodeDecodeError) as e:
+    except OSError as e:
+        raise PackError("unreadable", f"no se puede leer pack.json: {e}") from e
+    except (ValueError, UnicodeDecodeError, RecursionError) as e:
         raise PackError("bad_json", f"pack.json no es JSON válido: {e}") from e
-    errors = validate(manifest, load_schema("gworld.pack/0"))
+    try:
+        errors = validate(manifest, load_schema("gworld.pack/0"))
+    except RecursionError as e:
+        raise PackError("schema", "pack.json demasiado anidado para validarlo") from e
     if errors:
         desc = "; ".join(f"{e.path or '/'} {e.code} {e.params}" for e in errors)
         raise PackError("schema", f"pack.json no cumple gworld.pack/0: {desc}", errors)
+    lic = manifest["licence"]
+    if "spdx" not in lic and "text" not in lic:
+        raise PackError("schema", "pack.json no cumple gworld.pack/0: licence exige spdx o text")
 
-    root_r = root.resolve()
     rel = manifest["canon"]["path"]
-    if Path(rel).is_absolute() or Path(rel).drive:
-        raise PackError("canon_outside", f"canon.path {rel!r} es absoluta")
-    canon = root / rel
-    if not _inside(Path(os.path.normpath(root_r / rel)), root_r) or not _inside(canon.resolve(), root_r):
+    if "\0" in rel:
+        raise PackError("canon_outside", f"canon.path {rel!r} contiene un carácter nulo")
+    try:
+        root_r = root.resolve()
+        if Path(rel).is_absolute() or Path(rel).drive:
+            raise PackError("canon_outside", f"canon.path {rel!r} es absoluta")
+        canon = root / rel
+        outside = not _inside(Path(os.path.normpath(root_r / rel)), root_r) or not _inside(canon.resolve(), root_r)
+    except (ValueError, OSError) as e:
+        raise PackError("canon_outside", f"canon.path {rel!r} no se puede resolver: {e}") from e
+    if outside:
         raise PackError("canon_outside", f"canon.path {rel!r} sale del paquete")
     if not canon.exists():
         raise PackError("canon_missing", f"no existe el canon {rel!r}")
@@ -109,7 +132,6 @@ def load_pack(path: "str | os.PathLike") -> WorldPack:
     if actual != expected:
         raise PackError("canon_hash", f"la huella del canon no cuadra: esperada {expected}, real {actual}")
 
-    lic = manifest["licence"]
     return WorldPack(
         root=root,
         manifest=manifest,
