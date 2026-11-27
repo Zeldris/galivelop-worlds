@@ -353,3 +353,45 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 - Recommendation: sí: coste casi nulo
 - Answer: sí
 - Answered: 2026-11-27
+
+## Q-40
+- Refs: W4
+- Status: open
+- Asked: 2026-11-27
+- Question: Retro 0.2, candidato 1: tests/wmf.py único para localizar WMF y un test que rechace /home/ en tests/*.py
+- Recommendation: sí
+
+## Q-41
+- Refs: W4
+- Status: open
+- Asked: 2026-11-27
+- Question: Retro 0.2, candidato 2: línea en docs/plan.md para listar gworld/schemas/__init__.py y tools/__init__.py en ## Files
+- Recommendation: sí
+
+## Q-42
+- Refs: W4
+- Status: open
+- Asked: 2026-11-27
+- Question: Retro 0.2, candidato 3 (flujo): pasos en paralelo con firmas compartidas en el encargo y paso de integración antes de la revisión
+- Recommendation: sí, como pendiente del flujo
+
+## Q-43
+- Refs: W4
+- Status: open
+- Asked: 2026-11-27
+- Question: Retro 0.2, candidato 4 (flujo): el encargo del dealer abre la tarea con task.py start <id>
+- Recommendation: sí, como pendiente del flujo
+
+## Q-44
+- Refs: W4
+- Status: open
+- Asked: 2026-11-27
+- Question: Retro 0.2, candidato 5 (flujo): measure.py suma subagentes de todas las carpetas de sesión
+- Recommendation: sí (ya pedido)
+
+## Q-45
+- Refs: W4
+- Status: open
+- Asked: 2026-11-27
+- Question: Retro 0.2, candidato 6: barrido MAP-6 en 0.3 con los 3 leves de gworld/maps.py (¿y los 2 de topology.py?)
+- Recommendation: sí, solo maps.py; topology.py en otro barrido
