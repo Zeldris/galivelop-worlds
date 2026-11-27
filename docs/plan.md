@@ -41,7 +41,7 @@ Lo decide: tests. Invariantes: 4, 5, 8, 9 y 13.
 
 Lo decide: tests. Invariante: 3.
 
-- [ ] MAP-1 Esquema `gworld.map/0` con origen (archivo importado y huella).
+- [x] MAP-1 Esquema `gworld.map/0` con origen (archivo importado y huella).
 - [ ] MAP-2 `MapImporter` e importador FMG 1.137.6, reescrito desde `map-generator/importar.py` de WMF.
 - [ ] MAP-3 Topología: celdas, vecinas, regiones, rutas, ríos y distancias; grafo conexo sin celdas huérfanas.
 - [ ] MAP-4 Comprobador de mapas contra el canon, desde `map-generator/comprobar.py`.
