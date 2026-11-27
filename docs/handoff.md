@@ -11,7 +11,7 @@
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
 | **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-5 y PCK-8 hechas y revisadas (bloque MAP-5: 2 medios arreglados en `eb7ada7`, 8 leves en pending). Presupuesto de compactaciones: 1 |
 | **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
-| **Siguiente paso** | Cerrar 0.2: fase 2 antes de `main` (`gw-opt-tokens` y retro, presentadas a la persona); luego fase 3 y el PR |
+| **Siguiente paso** | Fase 2 de 0.2: `gw-opt-tokens` medido y presentado (Q-35 a Q-39, esperando respuesta); aplicar lo aprobado, luego retro, fase 3 y el PR |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
