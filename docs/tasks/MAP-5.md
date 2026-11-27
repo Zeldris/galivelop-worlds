@@ -36,11 +36,11 @@ Pasos, cada uno con su commit:
    versión distinta, `mismatch` por área con su número, Delaunay vacío. Informe «revisar» (Q-34: b):
    `FmgImporter.import_with_review(path) -> (doc, ImportReview)` con los marcadores automáticos y los burgs
    borrados como WMF; `import_map` sigue dando solo el doc. Los tests que leen el `.map` se saltan sin el clon de WMF.
-2. **Medidas** (`test_medir`, `test_visor.py:66`): área y envolvente de cada zona de Helek iguales a las de WMF
+2. **[hecho] Medidas** (`test_medir`, `test_visor.py:66`): área y envolvente de cada zona de Helek iguales a las de WMF
    (`places=3`); la mutación del canon (un tercio de las Llanuras a la Ciénaga) saca área y envolvente de tolerancia.
-3. **Reglas** (`test_comprobar`): las 5 mutaciones rompen esa regla y ninguna otra; `adelgaza` sin grosor da su
+3. **[hecho] Reglas** (`test_comprobar`): las 5 mutaciones rompen esa regla; el conjunto exacto de reglas rotas es el que da WMF (en 3 de las 5 rompen más de una también allí); `adelgaza` sin grosor da su
    detalle sin excepción; `corridor` con región 0 pisable (Q-33: a) con su test y su nota en el esquema.
-4. **Consultas** (lectura de `test_consultar`): vecinos, `path` por tierra y `distance_km` de los casos de WMF
+4. **[hecho] Consultas** (lectura de `test_consultar`): vecinos, `path` por tierra y `distance_km` de los casos de WMF
    (`ordinum`→`nabieus` y el rodeo cuando la recta cruza mar) con sus cifras.
 
 ## Acceptance
@@ -57,6 +57,7 @@ Pasos, cada uno con su commit:
 
 ## Change log
 
+- 2026-11-27: pasos 2 a 4 hechos y fusionados. Medidas: las 11 zonas de Helek (5 regiones, 4 provincias, 2 continentes) dan el área y la envolvente de WMF con `places=3`; la mutación del canon rompe `area-region-18`, `extent-region-18` y `extent-region-19`. Reglas: `helek.maprules.json` congelado (procedencia en el README); las 13 reglas del lore dan `ok`; las 5 mutaciones rompen el mismo conjunto que en WMF (comprobado ejecutando `comprobar.py` sobre las mismas mutaciones), no siempre una sola; `corridor` con región 0 pisable con su test y su nota en el esquema. Consultas: los caminos por tierra coinciden celda a celda con el Dijkstra de `consultar.py:344-357`; los km difieren 0.03-0.07 por el redondeo de los centros en `helek.gworld.json`.
 - 2026-11-27: paso 1 hecho: `tests/fixtures/helek/` (helek.json, helek.gworld.json, regen.py, README), `tests/test_helek_parity.py` e `ImportReview`/`FmgImporter.import_with_review` en `gworld/maps.py` (40 marcadores, 610 burgs borrados). Diferencia con WMF: el lugar 614 (Nabieus) esta movido en `helek.json`.
 - 2026-11-27: Q-31 a Q-34 contestadas; alcance, pasos y aceptación fijados. `helek.gworld.json` también va a fixtures para que el CI pruebe reglas y medidas.
 - 2026-11-27: ficha abierta con el inventario de los 11 tests y las preguntas Q-31 a Q-34.

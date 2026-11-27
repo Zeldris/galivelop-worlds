@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-4 y PCK-8 hechas y revisadas (`gworld/maps.py`, `gworld/topology.py`, `gworld/maprules.py`, `gworld/geometry.py`, `tools/tarkor_maprules.py`); WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a), Q-26 a Q-30 contestadas. Presupuesto de compactaciones: 1 |
+| **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-5 y PCK-8 hechas; MAP-5 pendiente de su revisión de bloque. Presupuesto de compactaciones: 1 |
 | **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
-| **Siguiente paso** | MAP-5 paso 1 (fixtures de Helek, test cruzado, paridad de `test_importar`, informe «revisar»); luego pasos 2 a 4 (`docs/tasks/MAP-5.md`) |
+| **Siguiente paso** | Revisión de bloque de MAP-5 (`86e1a90..HEAD`, en marcha con un subagente `gw-reviewer`): aplicar sus arreglos con el trailer `Findings:`; luego cerrar 0.2 (fase 2: `gw-opt-tokens` y retro) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
