@@ -44,7 +44,7 @@ Lo decide: tests. Invariante: 3.
 - [x] MAP-1 Esquema `gworld.map/0` con origen (archivo importado y huella).
 - [x] MAP-2 `MapImporter` e importador FMG 1.137.6, reescrito desde `map-generator/importar.py` de WMF.
 - [x] MAP-3 Topología: celdas, vecinas, regiones, rutas, ríos y distancias; grafo conexo sin celdas huérfanas.
-- [ ] MAP-4 Comprobador de mapas contra el canon, desde `map-generator/comprobar.py` y `medir.py`, con las reglas
+- [x] MAP-4 Comprobador de mapas contra el canon, desde `map-generator/comprobar.py` y `medir.py`, con las reglas
   en el paquete (`gworld.maprules/0`; Q-27 a Q-30).
 - [ ] MAP-5 Equivalencia con el `map-generator/` de WMF sobre `Helek_World.map` (sus 11 archivos de test como
   oráculo).

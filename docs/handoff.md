@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-3 y PCK-8 hechas y revisadas (`gworld/maps.py`, `gworld/topology.py`); WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a); MAP-4 pasos 1 a 4 hechos (humo con Helek: 13 reglas y 9 medidas ok, 3 sin decidir); falta su revisión de bloque, Q-26 a Q-30 contestadas. Presupuesto de compactaciones: 1 |
+| **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-4 y PCK-8 hechas y revisadas (`gworld/maps.py`, `gworld/topology.py`, `gworld/maprules.py`, `gworld/geometry.py`, `tools/tarkor_maprules.py`); WMF clonado en solo lectura en `../World-Maker-Fantasy` (Q-25: a), Q-26 a Q-30 contestadas. Presupuesto de compactaciones: 1 |
 | **Último punto estable** | Fusión del PR #2 en `main` (`6d2d4e7`) |
-| **Siguiente paso** | Revisión de bloque de MAP-4 (diff `37dea52..HEAD`, gw-reviewer) y sus arreglos; luego cerrar MAP-4 y seguir con MAP-5 |
+| **Siguiente paso** | MAP-5: equivalencia con el `map-generator/` de WMF sobre `Helek_World.map` (empezar por su ficha y sus preguntas de diseño); incluye decidir `corridor` con región 0 (Change log de MAP-4) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
@@ -20,11 +20,11 @@
 
 ## Hecho (5 últimas)
 
-1. 2026-11-27 — MAP-1 a MAP-3 y PCK-8 hechas y revisadas: esquema map/0, importador FMG, check_map y Topology; Helek_World.map (5120 celdas) pasa.
-2. 2026-11-27 — W1 fusionada en `main` (PR #2, `6d2d4e7`): paquete `gworld/` con esquemas, `load_pack` y lector del canon; retro de W1 aplicada.
-3. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
-4. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
-5. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
+1. 2026-11-27 — MAP-4: comprobador de mapas contra el canon (gworld.maprules/0, geometría, motor check_rules, conversor de Tarkor; humo con Helek 13+9 ok, 3 sin decidir); revisión de bloque con 12 arreglos
+2. 2026-11-27 — MAP-1 a MAP-4 y PCK-8 hechas y revisadas: esquema map/0, importador FMG, check_map y Topology; Helek_World.map (5120 celdas) pasa.
+3. 2026-11-27 — W1 fusionada en `main` (PR #2, `6d2d4e7`): paquete `gworld/` con esquemas, `load_pack` y lector del canon; retro de W1 aplicada.
+4. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
+5. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
 
 ## Pendiente
 
