@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `claude/rag-3` (desde `ccr-8aaeec3a-h97oxt`, sesión de la nube parada según la persona el 2026-11-28) |
-| **Fase / tarea** | RAG-3 implementado (`31d9997`: `gworld/machine_lock.py` `grun.lock/1`, `gworld/ollama.py` `bge-m3`, `gworld/sqlite_store.py`, suite `tests/store_contract.py`, leves de RAG-2 cerrados); falta su revisión de bloque. Antes: RAG-2 y RAG-1 hechos y revisados; 0.2.0 en `main` (PR #5). Presupuesto de compactaciones: 1 |
-| **Último punto estable** | RAG-3 (`31d9997`), check en verde; antes, revisión corta de RAG-2 (`Findings: 1`) |
-| **Siguiente paso** | Revisión de bloque de RAG-3 hecha: 0 graves, 2 medios (vectores sin valores válidos en `check_add`, fallos de URL de Ollama sin `EmbedError`) con un subagente arreglándolos; 7 leves a pendientes. Luego revisar su diff, subir y cerrar RAG-3. Pendiente de la persona: probar `OllamaEmbedder` con Ollama real y `bge-m3`. La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
+| **Fase / tarea** | RAG-3 hecho y con su revisión de bloque (`gworld/machine_lock.py` `grun.lock/1`, `gworld/ollama.py` `bge-m3`, `gworld/sqlite_store.py`, suite `tests/store_contract.py`; 2 medios arreglados en `abe94fc`: vectores sin valores válidos y fallos de URL de Ollama; 7 leves a pendientes). Antes: RAG-2 y RAG-1 hechos y revisados; 0.2.0 en `main` (PR #5). Presupuesto de compactaciones: 1 |
+| **Último punto estable** | Revisión de bloque de RAG-3 (`Findings: 2`, `abe94fc`); antes, RAG-3 (`31d9997`) |
+| **Siguiente paso** | RAG-4 (`index` y `retrieve(query, k)`; consultar con otro modelo falla y pide reindexar), mirando antes los leves de RAG-3 en pendientes que le tocan (reentrada del candado, `version` bajo el candado). Pendiente de la persona: probar `OllamaEmbedder` con Ollama real y `bge-m3`. La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
