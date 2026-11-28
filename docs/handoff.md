@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | MAP-6 hecho (barrido de leves de `gworld/maps.py`). 0.2.0 en `main` (PR #5, `6c14104`); falta la etiqueta y la release `v0.2.0`, que crea la persona en GitHub. Presupuesto de compactaciones: 1 |
-| **Último punto estable** | Fusión del PR #5 en `main` (`6c14104`) |
-| **Siguiente paso** | Revisión de bloque de MAP-6 y comprobar con `list_releases` la release `v0.2.0` sobre `6c14104` con `docs/releases/v0.2.0.md`. CHK-1 sigue esperando el acceso al GVE |
+| **Fase / tarea** | MAP-6 hecho y con su revisión de bloque (1 hallazgo arreglado: ruta que no es objeto tumbaba el mapa). 0.2.0 en `main` (PR #5, `6c14104`); falta la etiqueta y la release `v0.2.0`, que crea la persona en GitHub. Presupuesto de compactaciones: 1 |
+| **Último punto estable** | Revisión de bloque de MAP-6 (`Findings: 1`) |
+| **Siguiente paso** | La persona crea la etiqueta y la release `v0.2.0` sobre `6c14104` con `docs/releases/v0.2.0.md` (el 2026-11-28 aún no existía); comprobar con `list_releases`. CHK-1 sigue esperando el acceso al GVE |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación

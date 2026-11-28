@@ -375,7 +375,7 @@ class FmgImporter:
         routes = []
         for r in _json(rec[_ROUTES], "routes", []):
             pts_r = r.get("points") if isinstance(r, dict) else None
-            if not (isinstance(r.get("group"), str) and _SLUG.match(r["group"]) and len(r["group"]) <= 32
+            if not (isinstance(r, dict) and isinstance(r.get("group"), str) and _SLUG.match(r["group"]) and len(r["group"]) <= 32
                     and isinstance(pts_r, list) and len(pts_r) >= 2
                     and all(isinstance(q, list) and len(q) >= 2 and _num(q[0]) and _num(q[1]) for q in pts_r)):
                 continue  # ruta de grupo no slug, de menos de 2 puntos o con puntos ilegibles: se salta

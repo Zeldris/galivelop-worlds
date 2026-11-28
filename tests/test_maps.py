@@ -163,7 +163,7 @@ class FmgImportTest(unittest.TestCase):
     def test_ruta_invalida_se_salta(self):
         good = '{"i":0,"group":"roads","feature":1,"points":[[110.2,100,0],[210.5,105.25,1]]}'
         bad = ['{"i":1,"group":"Bad Group","points":[[1,2],[3,4]]}', '{"i":1,"group":"roads","points":[[1,2]]}',
-               '{"i":1,"group":"roads","points":[[1,2],["a",4]]}']
+               '{"i":1,"group":"roads","points":[[1,2],["a",4]]}', '"no es un objeto"', '[1,2]']
         for b in bad:
             lines = fixture_lines()
             lines[37] = f"[{good},{b}]"
