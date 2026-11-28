@@ -8,23 +8,23 @@
 
 | Campo | Valor |
 |---|---|
-| **Rama** | `claude/release-0.1.0` |
-| **Fase / tarea** | W1 (versión 0.1) fusionada en `main` (PR #2, `6d2d4e7`). Publicando 0.1.0: versión subida y notas en `docs/releases/v0.1.0.md` |
-| **Último punto estable** | `chore(W1): versión 0.1.0 y notas de la release` |
-| **Siguiente paso** | La persona autorizó el 2026-11-27 omitir la retro de este PR, fusionarlo con el CI en verde y publicar `v0.1.0`. Fusionado: etiqueta y release sobre la fusión; después vaciar «Para la próxima publicación» y seguir con 0.2 (MAP-1) |
+| **Rama** | `ccr-8aaeec3a-h97oxt` |
+| **Fase / tarea** | 0.2 (W4 Mapas): MAP-1 a MAP-5 y PCK-8 hechas y revisadas (bloque MAP-5: 2 medios arreglados en `eb7ada7`, 8 leves en pending). Presupuesto de compactaciones: 1 |
+| **Último punto estable** | Fusión de `main` con la release 0.1.0 (PR #3, `7e03ed1`) en la rama |
+| **Siguiente paso** | Fase 3 de 0.2: `532a13f` revisado (1 leve arreglado); `reviewed.sh`, push y el PR de 0.2 a `main` con la skill `pr` |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
 
-0.1 (W1 Paquete y canon): PCK-1 a PCK-7 de `docs/plan.md`
+0.2 (W4 Mapas): MAP-1 a MAP-5 y PCK-8 de `docs/plan.md`
 
 ## Hecho (5 últimas)
 
-1. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
-2. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
-3. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
-4. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
-5. 2026-11-26 — F-1 cerrada: decisiones D1-D13 según las recomendaciones; ADR 0001-0006.
+1. 2026-11-27 — MAP-5: equivalencia con `map-generator/` de WMF sobre Helek (import, medidas, reglas, caminos); fixtures en `tests/fixtures/helek/`; revisión de bloque con 2 arreglos.
+2. 2026-11-27 — MAP-4: comprobador de mapas contra el canon (gworld.maprules/0, geometría, motor check_rules, conversor de Tarkor; humo con Helek 13+9 ok, 3 sin decidir); revisión de bloque con 12 arreglos
+3. 2026-11-27 — MAP-1 a MAP-4 y PCK-8 hechas y revisadas: esquema map/0, importador FMG, check_map y Topology; Helek_World.map (5120 celdas) pasa.
+4. 2026-11-27 — W1 fusionada en `main` (PR #2, `6d2d4e7`): paquete `gworld/` con esquemas, `load_pack` y lector del canon; retro de W1 aplicada.
+5. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
 
 ## Pendiente
 

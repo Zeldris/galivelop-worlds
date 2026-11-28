@@ -311,7 +311,7 @@
   },
   "testMap": {
     "rules": [
-      {"paths": "^gworld/schemas/", "tests": ["tests/test_package.py", "tests/test_schemas_pack_canon.py"]},
+      {"paths": "^gworld/schemas/", "tests": ["tests/test_package.py", "tests/test_schemas_pack_canon.py", "tests/test_schema_map.py"]},
       {"paths": "^gworld/(?!schemas/)(?P<name>.+)\\.py$", "tests": ["tests/test_package.py", "tests/test_{name:id}.py"]}
     ],
     "command": "python3 -m unittest {files}"

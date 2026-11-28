@@ -29,6 +29,7 @@
         "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
       }
     },
+    "mapRules": {"type": "string", "minLength": 1, "description": "Reglas de mapa (gworld.maprules/0): ruta relativa a un archivo dentro del paquete. Opcional."},
     "rules": {"type": "array", "items": {"type": "string", "minLength": 1}}
   }
 }

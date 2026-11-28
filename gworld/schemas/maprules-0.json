@@ -1,0 +1,48 @@
+{
+  "$schema": "gart-subset",
+  "title": "gworld.maprules/0",
+  "description": "Reglas de mapa de un mundo (topologia, orden y medidas con tolerancia) para comprobar un gworld.map/0. Las zonas y lugares se citan por id del mapa. El subconjunto no tiene oneOf: los parametros de cada tipo, que las referencias existan y su capa los comprueba gworld.maprules (bind); la unicidad de los ids de regla, load_map_rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "map", "rules"],
+  "properties": {
+    "kind": {"const": "gworld.maprules/0"},
+    "map": {"$ref": "#/$defs/digest", "description": "Huella del archivo de origen del mapa (origin.sha256 de gworld.map/0)."},
+    "tolerance": {"type": "number", "minimum": 0, "default": 0.03, "description": "Tolerancia relativa de las medidas."},
+    "rules": {
+      "description": "Reglas que se juzgan (ok o no).",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rule",
+        "properties": {
+          "type": {"description": "Tipo de regla. corridor: la celda de partida de from fija la region de su capa; si no tiene zona en esa capa (region 0 de WMF), las celdas de tierra sin zona en esa capa son pisables (paridad con WMF, Q-33).", "enum": ["order","order", "side-of", "border", "coast-to-coast", "only-borders", "borders", "closes-by", "narrows", "corridor", "inside", "no-land-outside", "area", "extent", "distance"]}
+        }
+      }
+    },
+    "undecided": {
+      "description": "Reglas sin decidir: se miden o se listan sin juzgarlas.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rule",
+        "properties": {
+          "type": {"enum": ["edge", "area", "extent", "distance", "shape"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "rule": {
+      "description": "Campos comunes; ademas lleva los parametros de su tipo (claves libres aqui, comprobadas por bind).",
+      "type": "object",
+      "required": ["id", "type", "text", "source"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$", "maxLength": 64},
+        "type": {"type": "string", "minLength": 1},
+        "text": {"type": "string", "minLength": 1, "description": "La regla en lenguaje natural."},
+        "source": {"type": "string", "minLength": 1, "description": "Texto de la fuente de la que sale (como en WMF)."},
+        "facts": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Ids de hecho del canon que respaldan la regla."}
+      }
+    }
+  }
+}
