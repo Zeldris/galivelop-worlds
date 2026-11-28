@@ -75,7 +75,7 @@ Lo decide: el GVE. Invariantes: 6 y 7.
 Lo decide: el GVE con umbral. Invariantes: 12 y 13.
 
 - [x] RAG-1 Troceado del canon en `Chunk` con los ids de hecho.
-- [ ] RAG-2 Interfaces `Store` y `Embedder`; un extra que falte falla con la orden que lo instala.
+- [x] RAG-2 Interfaces `Store` y `Embedder`; un extra que falte falla con la orden que lo instala.
 - [ ] RAG-3 `Store` SQLite y `Embedder` con `nomic-embed-text` y `grun.lock/0`, modelo y versión guardados en el
   índice (ADR 0006).
 - [ ] RAG-4 `index` y `retrieve(query, k)`; consultar con otro modelo falla y pide reindexar.
