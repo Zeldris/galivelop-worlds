@@ -9,22 +9,22 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 fusionada en `main` (PR #4, `45884d4`). Publicando 0.2.0: versión subida y notas en `docs/releases/v0.2.0.md`. Presupuesto de compactaciones: 1 |
-| **Último punto estable** | Fusión del PR #4 en `main` (`45884d4`) |
-| **Siguiente paso** | La persona autorizó el 2026-11-28 publicar 0.2.0 («Si, publica»): PR de la rama a `main`, fusión con el CI en verde, etiqueta y release `v0.2.0` sobre la fusión con esas notas; después vaciar «Para la próxima publicación» y seguir con 0.3 (MAP-6; CHK-1 espera el acceso al GVE) |
+| **Fase / tarea** | 0.2.0 fusionada en `main` (PR #5, `6c14104`). Falta la etiqueta y la release `v0.2.0`, que crea la persona en GitHub (el proxy rechaza el push de etiquetas con 403). Presupuesto de compactaciones: 1 |
+| **Último punto estable** | Fusión del PR #5 en `main` (`6c14104`) |
+| **Siguiente paso** | Confirmar con `list_releases` que la persona creó la release `v0.2.0` sobre `6c14104` con `docs/releases/v0.2.0.md`. Después, 0.3: MAP-6 (barrido de `gworld/maps.py`) no tiene bloqueos; CHK-1 espera el acceso al GVE |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
 
-0.2 (W4 Mapas): MAP-1 a MAP-5 y PCK-8 de `docs/plan.md`
+_(nada todavía: 0.3 empieza con MAP-6)_
 
 ## Hecho (5 últimas)
 
-1. 2026-11-28 — 0.2 fusionada en `main` (PR #4, `45884d4`) con el CI en verde; fase 2 aplicada (Q-35 a Q-45: notas de ahorro, `tests/wmf.py`, MAP-6 en 0.3).
-2. 2026-11-27 — MAP-5: equivalencia con `map-generator/` de WMF sobre Helek (import, medidas, reglas, caminos); fixtures en `tests/fixtures/helek/`; revisión de bloque con 2 arreglos.
-3. 2026-11-27 — MAP-4: comprobador de mapas contra el canon (gworld.maprules/0, geometría, motor check_rules, conversor de Tarkor; humo con Helek 13+9 ok, 3 sin decidir); revisión de bloque con 12 arreglos
-4. 2026-11-27 — MAP-1 a MAP-4 y PCK-8 hechas y revisadas: esquema map/0, importador FMG, check_map y Topology; Helek_World.map (5120 celdas) pasa.
-5. 2026-11-27 — W1 fusionada en `main` (PR #2, `6d2d4e7`): paquete `gworld/` con esquemas, `load_pack` y lector del canon; retro de W1 aplicada.
+1. 2026-11-28 — 0.2.0 publicada en `main` (PR #5, `6c14104`): versión 0.2.0 y notas en `docs/releases/v0.2.0.md`; la etiqueta y la release, pendientes de la persona.
+2. 2026-11-28 — 0.2 fusionada en `main` (PR #4, `45884d4`) con el CI en verde; fase 2 aplicada (Q-35 a Q-45: notas de ahorro, `tests/wmf.py`, MAP-6 en 0.3).
+3. 2026-11-27 — MAP-5: equivalencia con `map-generator/` de WMF sobre Helek (import, medidas, reglas, caminos); fixtures en `tests/fixtures/helek/`; revisión de bloque con 2 arreglos.
+4. 2026-11-27 — MAP-4: comprobador de mapas contra el canon (gworld.maprules/0, geometría, motor check_rules, conversor de Tarkor; humo con Helek 13+9 ok, 3 sin decidir); revisión de bloque con 12 arreglos
+5. 2026-11-27 — MAP-1 a MAP-4 y PCK-8 hechas y revisadas: esquema map/0, importador FMG, check_map y Topology; Helek_World.map (5120 celdas) pasa.
 
 ## Pendiente
 
