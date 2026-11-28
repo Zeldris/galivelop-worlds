@@ -425,3 +425,24 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 - Recommendation: no; si se adelanta 0.4, el barrido de topology.py va dentro de 0.4
 - Answer: no
 - Answered: 2026-11-28
+
+## Q-48
+- Refs: RAG-3
+- Status: open
+- Asked: 2026-11-28
+- Question: grun ya publicó el protocolo como grun.lock/1 (solo cambia el campo schema; /0 queda superado y su test lo rechaza). ¿a) implemento /1; b) /0 como dice la ADR?
+- Recommendation: a: grun.lock/1 (mismo flock y ruta; el registro escribe schema grun.lock/1) y se corrige ADR 0006 y el plan
+
+## Q-49
+- Refs: RAG-3
+- Status: open
+- Asked: 2026-11-28
+- Question: WMF cambió su modelo de embeddings por defecto a bge-m3 (1024 dims); nomic-embed-text (768) queda en evals viejas. ¿Modelo por defecto: a) bge-m3; b) nomic-embed-text como dice la ADR?
+- Recommendation: a: bge-m3, que es el de WMF hoy (la ADR dice «el de WMF») y hace comparable RAG-5 con sus rag-casos; nomic-embed-text sigue valiendo pasándolo a mano
+
+## Q-50
+- Refs: RAG-3
+- Status: open
+- Asked: 2026-11-28
+- Question: ¿Cómo toma gworld el candado? a) implementación propia con fcntl.flock (stdlib) según el protocolo; b) importar grun como extra opcional
+- Recommendation: a: candado propio con fcntl (stdlib) siguiendo el protocolo, sin depender de grun; fuera de POSIX, error claro
