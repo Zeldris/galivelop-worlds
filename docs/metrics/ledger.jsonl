@@ -104,3 +104,7 @@
 {"agent":"main","branch":"ccr-8aaeec3a-h97oxt","cacheRead":275818,"cacheWrite":2553,"date":"2026-11-27","input":6,"model":"claude-opus-5-5","output":825,"recorded":"2026-11-27T15:34:09Z","refs":[],"session":"806910db"}
 {"agent":"main","branch":"claude/release-0.1.0","cacheRead":664369,"cacheWrite":53515,"date":"2026-11-27","input":22,"model":"claude-sonnet-5-5","output":6716,"recorded":"2026-11-27T20:59:23Z","refs":[],"session":"cf7f622f"}
 {"agent":"main","branch":"claude/release-0.1.0","cacheRead":159981,"cacheWrite":1636,"date":"2026-11-27","input":4,"model":"claude-sonnet-5-5","output":337,"recorded":"2026-11-27T20:59:49Z","refs":[],"session":"cf7f622f"}
+{"agent":"main","branch":"claude/release-0.1.0","cacheRead":858211,"cacheWrite":9498,"date":"2026-11-27","input":24,"model":"claude-sonnet-5-5","output":4700,"recorded":"2026-11-27T21:03:54Z","refs":[],"session":"cf7f622f"}
+{"agent":"main","branch":"claude/release-0.1.0","cacheRead":182043,"cacheWrite":556,"date":"2026-11-27","input":6,"model":"claude-sonnet-5-5","output":216,"recorded":"2026-11-27T21:04:03Z","refs":[],"session":"cf7f622f"}
+{"agent":"main","branch":"claude/release-0.1.0","cacheRead":64026,"cacheWrite":25055,"date":"2026-11-28","input":4,"model":"claude-opus-5-5","output":656,"recorded":"2026-11-28T15:18:55Z","refs":[],"session":"9d59ccb1"}
+{"agent":"main","branch":"claude/release-0.1.0","cacheRead":185180,"cacheWrite":3808,"date":"2026-11-28","input":10,"model":"claude-opus-5-5","output":1141,"recorded":"2026-11-28T15:20:37Z","refs":[],"session":"9d59ccb1"}

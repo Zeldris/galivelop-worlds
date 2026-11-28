@@ -20,11 +20,11 @@
 
 ## Hecho (5 últimas)
 
-1. 2026-11-27 — 0.1.0 publicada: release `v0.1.0` sobre `7e03ed1` (PR #3, CI en verde; retro omitida y fusión autorizadas por la persona).
-2. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
-3. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
-4. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
-5. 2026-11-26 — F0: plan de versiones 0.1-1.0 en `docs/plan.md` (W4 antes que W2 y W3), registrado en `plan` de `.claude/gw.json`.
+1. 2026-11-28 — Test de Tarkor (`tests/test_tarkor_pack.py`) en verde, comprobado solo en local (Steam Deck), con `GW_WMF_DIR=../World-Maker-Fantasy` en `19f3f10d`: 518 hechos; en CI se salta.
+2. 2026-11-27 — 0.1.0 publicada: release `v0.1.0` sobre `7e03ed1` (PR #3, CI en verde; retro omitida y fusión autorizadas por la persona).
+3. 2026-11-27 — Retro de W1 decidida (Q-17 a Q-24): todo aprobado salvo A1 (en la nube no se desactivan conectores); `taskRecord` activado, tests relacionados para `gworld/schemas/`, PCK-8 en 0.2.
+4. 2026-11-27 — PCK-7: paquete de Tarkor de prueba sobre `docs/rpgtarkor/` de WMF, solo lectura; 518 hechos, ids estables.
+5. 2026-11-27 — W0 fusionada en `main` (PR #1): flujo, DDD v1, ADR, plan 0.1-1.0 y retro de F0 aprobada.
 
 ## Pendiente
 
