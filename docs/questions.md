@@ -410,14 +410,18 @@ file (format: header of scripts/questions.py). Answer by number: `questions.py a
 
 ## Q-46
 - Refs: W3
-- Status: open
+- Status: answered
 - Asked: 2026-11-28
 - Question: W2 (0.3) está bloqueado por el GVE. ¿Qué hago ahora? a) adelantar W3 (0.4) con RAG-1 (troceado del canon en Chunk) y RAG-2 (interfaces Store y Embedder); b) barrido de los 3 leves de gworld/topology.py (MAP-3); c) esperar al GVE
 - Recommendation: a: empezar 0.4 por RAG-1 y RAG-2, que no esperan a nadie (D7 permite un Embedder propio mientras tanto)
+- Answer: a
+- Answered: 2026-11-28
 
 ## Q-47
 - Refs: W3
-- Status: open
+- Status: answered
 - Asked: 2026-11-28
 - Question: ¿Saco 0.3 sin W2, solo con MAP-6 y el barrido de topology.py?
 - Recommendation: no; si se adelanta 0.4, el barrido de topology.py va dentro de 0.4
+- Answer: no
+- Answered: 2026-11-28
