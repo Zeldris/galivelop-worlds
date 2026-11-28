@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `claude/rag-3` (desde `ccr-8aaeec3a-h97oxt`, sesión de la nube parada según la persona el 2026-11-28) |
-| **Fase / tarea** | RAG-3 en curso ([ficha](tasks/RAG-3.md)): `Store` SQLite, `Embedder` Ollama `bge-m3`, candado `grun.lock/1` propio sobre `fcntl` (Q-48 a Q-50; ADR 0006 revisada). Implementación encargada a un subagente. Antes: RAG-2 y RAG-1 hechos y revisados; 0.2.0 en `main` (PR #5). Presupuesto de compactaciones: 1 |
-| **Último punto estable** | Revisión corta de RAG-2 (`Findings: 1`); antes, release `v0.2.0`, RAG-2 (`8e28823`) y revisión corta de RAG-1 (`Findings: 2`, `94440b9`) |
-| **Siguiente paso** | Revisar el diff del subagente de RAG-3 contra la ficha, marcar el plan y cerrar con revisión corta. La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
+| **Fase / tarea** | RAG-3 implementado (`31d9997`: `gworld/machine_lock.py` `grun.lock/1`, `gworld/ollama.py` `bge-m3`, `gworld/sqlite_store.py`, suite `tests/store_contract.py`, leves de RAG-2 cerrados); falta su revisión de bloque. Antes: RAG-2 y RAG-1 hechos y revisados; 0.2.0 en `main` (PR #5). Presupuesto de compactaciones: 1 |
+| **Último punto estable** | RAG-3 (`31d9997`), check en verde; antes, revisión corta de RAG-2 (`Findings: 1`) |
+| **Siguiente paso** | Revisión de bloque desde `4bf12f1` (RAG-3, >1000 líneas) y sus arreglos; pendiente de la persona: probar `OllamaEmbedder` con Ollama real y `bge-m3`. La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
