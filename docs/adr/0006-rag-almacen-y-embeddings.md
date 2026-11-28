@@ -14,3 +14,12 @@ texto; gmod recomienda modelos `embed`.
   llama a Ollama tomando el candado con el protocolo `grun.lock/0`.
 - Modelo por defecto `nomic-embed-text`; el índice guarda modelo y versión, y consultar con otro falla y pide
   reindexar (invariante 12).
+
+## Revisión 2026-11-28 (RAG-3, Q-48 a Q-50)
+
+- grun publicó el protocolo como `grun.lock/1` (solo cambia el campo `schema`; mismo `flock` y misma ruta): el
+  `Embedder` usa `/1`.
+- WMF pasó a `bge-m3` (1024 dimensiones) como modelo de embeddings por defecto: es el de gworld. `nomic-embed-text`
+  sigue valiendo pasándolo a mano.
+- gworld toma el candado con su propia implementación sobre `fcntl.flock` (stdlib), sin depender de grun; fuera de
+  POSIX el `Embedder` de Ollama falla con un error claro.

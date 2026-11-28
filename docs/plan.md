@@ -76,7 +76,7 @@ Lo decide: el GVE con umbral. Invariantes: 12 y 13.
 
 - [x] RAG-1 Troceado del canon en `Chunk` con los ids de hecho.
 - [x] RAG-2 Interfaces `Store` y `Embedder`; un extra que falte falla con la orden que lo instala.
-- [ ] RAG-3 `Store` SQLite y `Embedder` con `nomic-embed-text` y `grun.lock/0`, modelo y versión guardados en el
+- [ ] RAG-3 `Store` SQLite y `Embedder` con `bge-m3` y `grun.lock/1`, modelo y versión guardados en el
   índice (ADR 0006).
 - [ ] RAG-4 `index` y `retrieve(query, k)`; consultar con otro modelo falla y pide reindexar.
 - [ ] RAG-5 Acierto de recuperación en el GVE, empezando por `rag-casos.jsonl` de WMF, y su umbral.

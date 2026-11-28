@@ -14,7 +14,7 @@ mundo» que corre sobre el kit.
   - `galivelop-models` (gmod): qué modelo de texto (`chat`) y de embeddings (`embed`) cabe en la máquina, con
     `recommend(task, machine, license_use)` sobre `gmod.machine/0`.
   - `galivelop-runtime` (grun): el turno de Ollama (`OllamaTurn`) bajo el candado de máquina (`flock` sobre
-    `gpu.lock`; protocolo `grun.lock/0`). Llega en su hito R5, solo POSIX, y no promete embeddings (P7).
+    `gpu.lock`; protocolo `grun.lock/1`, antes `/0`). Llega en su hito R5, solo POSIX, y no promete embeddings (P7).
   - `galivelop-evaluator` (GVE): mide la narración y el RAG. Es privado; no se ha podido leer para este borrador.
 
 > **Cambios desde el borrador 1** (comprobado leyendo gart, gmod, grun, WMF, el instalador, gimg, gvoice, gforge y el
@@ -286,8 +286,8 @@ tabla de «Decisiones» y los ADR de `docs/adr/`.
    guardarlos en `gworld.canon/0`, sin escribir nada en el canon.
 7. **¿De dónde salen los embeddings?** grun solo promete el turno de texto, y gmod sí recomienda modelos `embed`.
    **Recomendación:** pedir a grun un turno de embeddings bajo el mismo candado; hasta entonces, un `Embedder` que
-   llama a Ollama tomando el candado con el protocolo `grun.lock/0`. Modelo por defecto, el de WMF
-   (`nomic-embed-text`), guardado con su versión en el índice.
+   llama a Ollama tomando el candado con el protocolo `grun.lock/1`. Modelo por defecto, el de WMF
+   (`bge-m3` desde 2026-11; antes `nomic-embed-text`), guardado con su versión en el índice.
 8. **¿El comprobador es determinista o un juez con IA?**
    **Recomendación:** dos capas. La primera, determinista y obligatoria: entidades, fechas y relaciones contra las
    tablas del canon. La segunda, un `Judge` local opcional para lo que la primera marque como `unknown`, apuntado
@@ -323,7 +323,7 @@ Tomadas el 2026-11-26 (Q-1 a Q-13 de `docs/questions.md`).
 | D4 | ¿Qué hacer mientras gart, gmod y grun solo tienen diseño? | Esquemas en formato gart con comprobación mínima propia; perfil fijo de Steam Deck sin `gmod.machine/0`; W6 espera a grun R5. | §7 |
 | D5 | ¿Python o TypeScript? | Contrato en artefactos gart; núcleo Python ≥ 3.10 stdlib; el turno de Tarkor sigue en TypeScript hasta W5. [ADR 0004](adr/0004-stack.md) | §5.13 |
 | D6 | ¿Ids de hecho sin tocar el canon? | Derivados al cargar (archivo, ruta de encabezados, huella del texto normalizado) y guardados en `gworld.canon/0`. [ADR 0005](adr/0005-ids-de-hecho.md) | §3.3, §5.5 |
-| D7 | ¿De dónde salen los embeddings? | Se pide a grun un turno de embeddings; mientras, `Embedder` con `grun.lock/0` y `nomic-embed-text` versionado en el índice. [ADR 0006](adr/0006-rag-almacen-y-embeddings.md) | §3.3, §5.12 |
+| D7 | ¿De dónde salen los embeddings? | Se pide a grun un turno de embeddings; mientras, `Embedder` con `grun.lock/1` y `bge-m3` versionado en el índice. [ADR 0006](adr/0006-rag-almacen-y-embeddings.md) | §3.3, §5.12 |
 | D8 | ¿Comprobador determinista o juez con IA? | Dos capas: determinista obligatoria y `Judge` opcional apuntado en `gworld.check/0`. | §3.4 |
 | D9 | ¿Generar mapas o importarlos? | Importar FMG en las primeras versiones; generación por semilla después como un `MapImporter` más. | §3.2 |
 | D10 | ¿De quién son los prompts del Narrador? | El kit pone el adaptador (orden de bloques, recuperación, grun, reintentos, plantilla de respaldo y comprobación); el paquete, prompts, tono y modelos. | §3.5 |
