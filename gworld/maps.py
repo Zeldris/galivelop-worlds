@@ -5,6 +5,8 @@ que valida contra su esquema. El mismo archivo da el mismo documento. Fallos com
 ``unreadable`` (error de E/S), ``malformed`` (no es un .map de FMG, truncado o con registros ilegibles),
 ``unsupported_version`` (no es la 1.137.6), ``mismatch`` (las celdas reconstruidas no cuadran con lo que guardo FMG),
 ``schema`` (el documento producido no valida: fallo del importador).
+Una ruta de grupo no slug, de menos de 2 puntos o con puntos ilegibles, y un burgo sin ``name`` o sin posicion
+legible se saltan: el resto del mapa se importa.
 ``import_with_review`` devuelve ademas un ``ImportReview`` (marcadores automaticos y burgs borrados).
 
 El ``.map`` no guarda la forma de las celdas del mapa politico: solo la rejilla y sus alturas; FMG las rehace al
@@ -31,9 +33,12 @@ _COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 # Posicion de cada registro del .map (FMG 1.137.6): 46 registros separados por saltos de linea.
 _PARAMS, _NOTES, _BIOMES, _GRID, _GRID_H, _GRID_F, _GRID_T, _FEATURES, _STATES, _BURGS = 0, 4, 3, 6, 7, 9, 10, 12, 14, 15
-_C_BIOME, _C_RIVER, _C_STATE, _C_PROVINCE = 16, 22, 25, 27
+_C_BIOME, _C_STATE, _C_PROVINCE = 16, 25, 27
 _PROVINCES, _RIVERS, _MARKERS, _ROUTES = 30, 32, 35, 37
+# FMG guarda 46 registros, pero el ultimo (indice 45) es una linea vacia tras el ultimo salto de linea y nunca se
+# lee: el indice mas alto que se usa es _ROUTES (37). Un archivo sin ese salto final trae 45 y es valido.
 _MIN_RECORDS = 45
+_SLUG = re.compile(r"^[a-z][a-z0-9-]*$")  # como $defs/slug del esquema map/0
 
 
 class MapError(Exception):
@@ -294,7 +299,7 @@ class FmgImporter:
             raise MapError("unsupported_version", f"{name} es de FMG {params[0]} y solo se conoce la {FMG_VERSION}",
                            params[0])
         if len(rec) < _MIN_RECORDS:
-            raise MapError("malformed", f"{name} tiene {len(rec)} registros y FMG {FMG_VERSION} guarda 46: truncado")
+            raise MapError("malformed", f"{name} tiene {len(rec)} registros y FMG {FMG_VERSION} guarda 46 (45 sin el salto de linea final): truncado")
         width, height = int(params[4]), int(params[5])
         grid = _json(rec[_GRID], "grid")
         pts, heights, cv, cc, vertices, areas = _regraph(grid, _ints(rec[_GRID_H]), _ints(rec[_GRID_T]),
@@ -331,9 +336,10 @@ class FmgImporter:
             if isinstance(s.get("center"), int) and 0 <= s["center"] < n:
                 z["centerCell"] = s["center"]
             zones.append(z)
+        region_ids = {z["id"] for z in zones if z["layer"] == "region"}
         for pv in _live(_json(rec[_PROVINCES], "provinces", [])):
             z = {"id": f"province:{pv['i']}", "layer": "province", "name": pv["name"], **_color(pv.get("color"))}
-            if pv.get("state"):
+            if f"region:{pv.get('state')}" in region_ids:
                 z["parent"] = f"region:{pv['state']}"
             if isinstance(pv.get("center"), int) and 0 <= pv["center"] < n:
                 z["centerCell"] = pv["center"]
@@ -356,6 +362,9 @@ class FmgImporter:
         for b in _live(_json(rec[_BURGS], "burgs", [])):
             if not b.get("i"):
                 continue
+            if not (isinstance(b.get("name"), str) and b["name"] and isinstance(b.get("cell"), int)
+                    and 0 <= b["cell"] < n and _num(b.get("x")) and _num(b.get("y"))):
+                continue  # burgo sin nombre o sin posicion legible: se salta
             pl = {"id": b["i"], "name": b["name"], "cell": b["cell"], "point": [_round(b["x"], 2), _round(b["y"], 2)]}
             if b.get("type"):
                 pl["type"] = b["type"]
@@ -365,7 +374,12 @@ class FmgImporter:
 
         routes = []
         for r in _json(rec[_ROUTES], "routes", []):
-            rt = {"id": r["i"], "group": r["group"], "points": [[_round(q[0], 2), _round(q[1], 2)] for q in r["points"]]}
+            pts_r = r.get("points") if isinstance(r, dict) else None
+            if not (isinstance(r.get("group"), str) and _SLUG.match(r["group"]) and len(r["group"]) <= 32
+                    and isinstance(pts_r, list) and len(pts_r) >= 2
+                    and all(isinstance(q, list) and len(q) >= 2 and _num(q[0]) and _num(q[1]) for q in pts_r)):
+                continue  # ruta de grupo no slug, de menos de 2 puntos o con puntos ilegibles: se salta
+            rt = {"id": r["i"], "group": r["group"], "points": [[_round(q[0], 2), _round(q[1], 2)] for q in pts_r]}
             if f"landmass:{r.get('feature')}" in known:
                 rt["zone"] = f"landmass:{r['feature']}"
             routes.append(rt)

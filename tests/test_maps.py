@@ -28,12 +28,14 @@ def fixture_lines():
     return FIXTURE.read_text(encoding="utf-8").split("\n")
 
 
-def code_of(text):
+def code_of(text, fragment=None):
     with tempfile.TemporaryDirectory() as d:
         p = Path(d) / "x.map"
         p.write_text(text, encoding="utf-8")
         with unittest.TestCase().assertRaises(MapError) as cm:
             FmgImporter().import_map(p)
+        if fragment is not None:
+            unittest.TestCase().assertIn(fragment, str(cm.exception))
         return cm.exception.code
 
 
@@ -111,20 +113,20 @@ class FmgImportTest(unittest.TestCase):
         self.assertEqual(cm.exception.detail, "1.99.0")
 
     def test_no_es_un_map(self):
-        self.assertEqual(code_of("hola\nmundo\n"), "malformed")
+        self.assertEqual(code_of("hola\nmundo\n", "el registro 5 no es el SVG"), "malformed")
         lines = fixture_lines()
         lines[0] = "no es una version"
-        self.assertEqual(code_of("\n".join(lines)), "malformed")
+        self.assertEqual(code_of("\n".join(lines), "no empieza por una version de FMG"), "malformed")
 
     def test_truncado(self):
         lines = fixture_lines()
-        self.assertEqual(code_of("\n".join(lines[:20])), "malformed")  # faltan registros
-        self.assertEqual(code_of("\n".join(lines[:5] + ["<svg>"] + lines[6:])), "malformed")  # SVG sin cerrar
+        self.assertEqual(code_of("\n".join(lines[:20]), "tiene 20 registros"), "malformed")  # faltan registros
+        self.assertEqual(code_of("\n".join(lines[:5] + ["<svg>"] + lines[6:]), "no se cierra"), "malformed")  # SVG sin cerrar
 
     def test_registro_json_roto(self):
         lines = fixture_lines()
         lines[6] = lines[6][:100]
-        self.assertEqual(code_of("\n".join(lines)), "malformed")
+        self.assertEqual(code_of("\n".join(lines), "no es JSON valido"), "malformed")
 
     def test_array_de_otra_longitud(self):
         lines = fixture_lines()
@@ -148,7 +150,29 @@ class FmgImportTest(unittest.TestCase):
             with self.assertRaises(MapError) as cm:
                 FmgImporter().import_map(p)
         self.assertEqual(cm.exception.code, "malformed")
+        self.assertIn("no es texto UTF-8", str(cm.exception))
 
+
+    def test_provincia_de_estado_inexistente_sin_parent(self):
+        for state in (0, 9):
+            lines = fixture_lines()
+            lines[30] = lines[30].replace('"state":1', f'"state":{state}')
+            prov = [z for z in import_text("\n".join(lines))["zones"] if z["id"] == "province:1"][0]
+            self.assertNotIn("parent", prov)
+
+    def test_ruta_invalida_se_salta(self):
+        good = '{"i":0,"group":"roads","feature":1,"points":[[110.2,100,0],[210.5,105.25,1]]}'
+        bad = ['{"i":1,"group":"Bad Group","points":[[1,2],[3,4]]}', '{"i":1,"group":"roads","points":[[1,2]]}',
+               '{"i":1,"group":"roads","points":[[1,2],["a",4]]}']
+        for b in bad:
+            lines = fixture_lines()
+            lines[37] = f"[{good},{b}]"
+            self.assertEqual([r["id"] for r in import_text("\n".join(lines))["routes"]], [0], b)
+
+    def test_burgo_sin_nombre_se_salta(self):
+        lines = fixture_lines()
+        lines[15] = lines[15].replace('"name":"Villa Uno",', "")
+        self.assertEqual(import_text("\n".join(lines))["places"], [])
 
     def test_error_aritmetico_es_malformed(self):
         with mock.patch("gworld.maps.triangulate", side_effect=ZeroDivisionError("division by zero")):
