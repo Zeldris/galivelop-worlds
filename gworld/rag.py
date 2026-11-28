@@ -1,6 +1,7 @@
 """Interfaces del RAG: ``Embedder`` y ``Store`` (RAG-2; ADR 0006, invariantes 12 y 13).
 
-Solo contratos y utilidades de stdlib: ninguna implementación (SQLite y Ollama llegan en RAG-3).
+Solo contratos y utilidades de stdlib. Las implementaciones por defecto (RAG-3) viven en
+``gworld.sqlite_store`` y ``gworld.ollama``.
 
 - ``Embedder``: convierte textos en vectores y declara ``model`` y ``version``.
 - ``Store``: guarda ``Chunk`` con su vector y busca por coseno. El índice recuerda el ``IndexMeta``
@@ -37,10 +38,20 @@ class EmbedError(RagError):
     """El ``Embedder`` no devolvió lo pedido."""
 
 
+class StoreError(RagError, ValueError):
+    """Argumentos que el ``Store`` no admite (longitudes, dimensión o ``k`` fuera de contrato)."""
+
+
 @dataclass(frozen=True)
 class IndexMeta:
     model: str
     version: str
+
+    def __post_init__(self):
+        for name in ("model", "version"):
+            value = getattr(self, name)
+            if not isinstance(value, str) or not value.strip():
+                raise RagError(f"IndexMeta.{name} tiene que ser un texto no vacío, no {value!r}")
 
 
 @dataclass(frozen=True)
@@ -64,19 +75,35 @@ def require_extra(module: str, extra: str):
 
 
 def cosine(a: Sequence[float], b: Sequence[float]) -> float:
-    """Similitud coseno; vectores de otra longitud o de norma 0 dan ``EmbedError``."""
+    """Similitud coseno; vectores de otra longitud o de norma 0 dan ``EmbedError``, y un resultado no finito
+    (valores enormes) también. Se normaliza antes de multiplicar para no desbordar."""
     if len(a) != len(b):
         raise EmbedError(f"vectores de longitud distinta: {len(a)} y {len(b)}")
-    na = math.sqrt(sum(x * x for x in a))
-    nb = math.sqrt(sum(y * y for y in b))
+    na = math.hypot(*a)
+    nb = math.hypot(*b)
     if na == 0 or nb == 0:
         raise EmbedError("vector de norma 0: no hay coseno")
-    return sum(x * y for x, y in zip(a, b)) / (na * nb)
+    if not (math.isfinite(na) and math.isfinite(nb)):
+        raise EmbedError("vector de norma no finita: no hay coseno")
+    result = sum((x / na) * (y / nb) for x, y in zip(a, b))
+    if not math.isfinite(result):
+        raise EmbedError("el coseno no es finito")
+    return result
 
 
 class Embedder(ABC):
-    model: str
-    version: str
+    """Convierte textos en vectores. Las subclases declaran ``model`` y ``version`` (atributo de clase o
+    propiedad); sin ellos no se pueden instanciar."""
+
+    @property
+    @abstractmethod
+    def model(self) -> str:
+        """Nombre del modelo de embeddings."""
+
+    @property
+    @abstractmethod
+    def version(self) -> str:
+        """Versión del modelo (p. ej. su digest): cambia si el modelo cambia."""
 
     @property
     def meta(self) -> IndexMeta:
@@ -87,10 +114,17 @@ class Embedder(ABC):
         """Un vector por texto, en el mismo orden y todos de la misma longitud."""
 
     def embed_checked(self, texts: Sequence[str]) -> list[Vector]:
-        """``embed`` con la forma comprobada: ``len(texts)`` vectores finitos de igual longitud."""
-        out = [tuple(float(x) for x in v) for v in self.embed(texts)]
+        """``embed`` con la forma comprobada: ``len(texts)`` vectores no vacíos, numéricos, finitos y de igual
+        longitud."""
+        raw = self.embed(texts)
+        try:
+            out = [tuple(float(x) for x in v) for v in raw]
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise EmbedError(f"un vector trae elementos no numéricos: {exc}") from exc
         if len(out) != len(texts):
             raise EmbedError(f"se pidieron {len(texts)} vectores y llegaron {len(out)}")
+        if any(len(v) == 0 for v in out):
+            raise EmbedError("un vector llegó vacío")
         if len({len(v) for v in out}) > 1:
             raise EmbedError("los vectores no tienen todos la misma longitud")
         if any(not math.isfinite(x) for v in out for x in v):
@@ -99,23 +133,64 @@ class Embedder(ABC):
 
 
 class Store(ABC):
+    """Almacén de fragmentos con vector. Contrato (lo comprueba ``tests/store_contract.py``):
+
+    - ``add``: ``len(chunks) != len(vectors)`` o una dimensión distinta de la del índice (o vectores de
+      distinta longitud entre sí) fallan con ``StoreError`` sin guardar nada; mismo id sustituye; un ``add``
+      vacío no fija el meta; el primer ``add`` con filas fija el meta y la dimensión en el mismo paso que
+      las filas (todo o nada).
+    - ``search``: ``k <= 0`` falla con ``StoreError``; un vector de otra dimensión, también; el resultado va
+      de mayor a menor ``score`` y, a igualdad, por id.
+    - Otro ``meta`` que el del índice falla con ``IndexMismatchError`` en ambos.
+    """
+
     @abstractmethod
-    def meta(self) -> "IndexMeta | None":
+    def meta(self) -> IndexMeta | None:
         """Modelo y versión del índice, o ``None`` si está vacío y sin estrenar."""
+
+    @abstractmethod
+    def dimension(self) -> int | None:
+        """Longitud de los vectores del índice, o ``None`` si está vacío y sin estrenar."""
 
     @abstractmethod
     def add(self, meta: IndexMeta, chunks: Sequence[Chunk], vectors: Sequence[Vector]) -> None:
         """Guarda los fragmentos con sus vectores (mismo id: se sustituye). Falla con
-        ``IndexMismatchError`` si ``meta`` difiere del del índice."""
+        ``IndexMismatchError`` si ``meta`` difiere del del índice y con ``StoreError`` si la forma es mala."""
 
     @abstractmethod
     def search(self, meta: IndexMeta, vector: Vector, k: int) -> list[Hit]:
-        """Los ``k`` fragmentos más cercanos por coseno, de mayor a menor ``score``. Falla con
-        ``IndexMismatchError`` si ``meta`` difiere del del índice."""
+        """Los ``k`` fragmentos más cercanos por coseno, de mayor a menor ``score`` (a igualdad, por id).
+        Falla con ``IndexMismatchError`` si ``meta`` difiere del del índice y con ``StoreError`` si ``k <= 0``
+        o la dimensión no es la del índice."""
 
     @abstractmethod
     def clear(self) -> None:
         """Vacía el índice y olvida su ``IndexMeta`` (el paso previo a reindexar con otro modelo)."""
+
+    def check_add(self, meta: IndexMeta, chunks: Sequence[Chunk], vectors: Sequence[Vector]) -> int | None:
+        """Valida un ``add`` antes de guardar y devuelve la dimensión de los vectores (``None`` si no hay)."""
+        self.check_meta(meta)
+        if len(chunks) != len(vectors):
+            raise StoreError(f"{len(chunks)} fragmentos y {len(vectors)} vectores: tienen que ser tantos como tantos")
+        dims = {len(v) for v in vectors}
+        if not dims:
+            return None
+        if len(dims) > 1 or 0 in dims:
+            raise StoreError("los vectores tienen que ser no vacíos y de la misma longitud")
+        (dim,) = dims
+        have = self.dimension()
+        if have is not None and have != dim:
+            raise StoreError(f"los vectores tienen dimensión {dim} y el índice {have}: reindexa si cambió el modelo")
+        return dim
+
+    def check_search(self, meta: IndexMeta, vector: Sequence[float], k: int) -> None:
+        """Valida un ``search`` antes de consultar."""
+        self.check_meta(meta)
+        if isinstance(k, bool) or not isinstance(k, int) or k <= 0:
+            raise StoreError(f"k tiene que ser un entero mayor que 0, no {k!r}")
+        have = self.dimension()
+        if have is not None and len(vector) != have:
+            raise StoreError(f"el vector de consulta tiene dimensión {len(vector)} y el índice {have}")
 
     def check_meta(self, meta: IndexMeta) -> None:
         have = self.meta()

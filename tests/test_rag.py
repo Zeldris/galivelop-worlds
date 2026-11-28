@@ -1,12 +1,18 @@
 """RAG-2: interfaces Store y Embedder; un extra que falte falla con la orden que lo instala."""
 
+import os
 import subprocess
 import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 from gworld.chunks import Chunk
-from gworld.rag import (EmbedError, Embedder, Hit, IndexMeta, IndexMismatchError, MissingExtraError, Store,
+from gworld.rag import (EmbedError, Embedder, Hit, IndexMeta, IndexMismatchError, MissingExtraError, RagError, Store,
                         cosine, require_extra)
+from tests.store_contract import StoreContract
+
+ROOT = Path(__file__).resolve().parent.parent
 
 M1 = IndexMeta("nomic-embed-text", "1")
 M2 = IndexMeta("nomic-embed-text", "2")
@@ -28,23 +34,33 @@ class FakeEmbedder(Embedder):
 
 class MemStore(Store):
     def __init__(self):
-        self._meta, self.rows = None, {}
+        self._meta, self._dim, self.rows = None, None, {}
 
     def meta(self):
         return self._meta
 
+    def dimension(self):
+        return self._dim
+
     def add(self, meta, chunks, vectors):
-        self.check_meta(meta)
-        self._meta = meta
-        self.rows.update({c.id: (c, v) for c, v in zip(chunks, vectors)})
+        dim = self.check_add(meta, chunks, vectors)
+        if dim is None:
+            return
+        self._meta, self._dim = meta, dim
+        self.rows.update({c.id: (c, tuple(v)) for c, v in zip(chunks, vectors)})
 
     def search(self, meta, vector, k):
-        self.check_meta(meta)
+        self.check_search(meta, vector, k)
         hits = [Hit(c, cosine(vector, v)) for c, v in self.rows.values()]
-        return sorted(hits, key=lambda h: -h.score)[:k]
+        return sorted(hits, key=lambda h: (-h.score, h.chunk.id))[:k]
 
     def clear(self):
-        self._meta, self.rows = None, {}
+        self._meta, self._dim, self.rows = None, None, {}
+
+
+class MemStoreContractTest(StoreContract, unittest.TestCase):
+    def make_store(self):
+        return MemStore()
 
 
 class InterfaceTest(unittest.TestCase):
@@ -62,10 +78,40 @@ class InterfaceTest(unittest.TestCase):
 
     def test_embed_checked_rechaza_forma_mala(self):
         for out, msg in (([(1.0,)], "se pidieron 2"), ([(1.0,), (1.0, 2.0)], "misma longitud"),
-                         ([(1.0,), (float("nan"),)], "no finitos")):
+                         ([(1.0,), (float("nan"),)], "no finitos"), ([(), ()], "llegó vacío"),
+                         ([(1.0,), (None,)], "no numéricos"), ([(1.0,), ("x",)], "no numéricos"),
+                         ([(1.0,), (10 ** 400,)], "no numéricos")):
             with self.subTest(msg=msg), self.assertRaises(EmbedError) as cm:
                 FakeEmbedder(out).embed_checked(["a", "b"])
             self.assertIn(msg, str(cm.exception))
+
+    def test_model_y_version_son_obligatorios(self):
+        class SinNada(Embedder):
+            def embed(self, texts):
+                return []
+
+        class SoloModelo(SinNada):
+            model = "m"
+
+        with self.assertRaises(TypeError) as cm:
+            SinNada()
+        self.assertIn("model", str(cm.exception))
+        with self.assertRaises(TypeError) as cm:
+            SoloModelo()
+        self.assertIn("version", str(cm.exception))
+
+    def test_indexmeta_rechaza_campos_vacios(self):
+        for args in (("", "1"), ("m", ""), ("  ", "1"), ("m", None)):
+            with self.subTest(args=args), self.assertRaises(RagError) as cm:
+                IndexMeta(*args)
+            self.assertIn("IndexMeta.", str(cm.exception))
+
+    def test_cosine_no_desborda(self):
+        self.assertAlmostEqual(cosine((1e200, 1e200), (1e200, 1e200)), 1.0)
+        self.assertAlmostEqual(cosine((1e200, 0), (0, 1e200)), 0.0)
+        with self.assertRaises(EmbedError) as cm:
+            cosine((1e308, 1e308), (float("inf"), 1.0))
+        self.assertIn("no finit", str(cm.exception))
 
     def test_cosine(self):
         self.assertAlmostEqual(cosine((1, 0), (1, 0)), 1.0)
@@ -76,24 +122,7 @@ class InterfaceTest(unittest.TestCase):
             self.assertIn(msg, str(cm.exception))
 
 
-class StoreContractTest(unittest.TestCase):
-    def test_consultar_con_otro_modelo_pide_reindexar(self):
-        s = MemStore()
-        s.add(M1, [chunk(0)], [(1.0, 0.0)])
-        for call in (lambda: s.search(M2, (1.0, 0.0), 1), lambda: s.add(M2, [chunk(1)], [(0.0, 1.0)])):
-            with self.assertRaises(IndexMismatchError) as cm:
-                call()
-            self.assertIn("reindexa", str(cm.exception))
-            self.assertIn("nomic-embed-text 1", str(cm.exception))
-
-    def test_clear_permite_otro_modelo(self):
-        s = MemStore()
-        s.add(M1, [chunk(0)], [(1.0, 0.0)])
-        s.clear()
-        self.assertIsNone(s.meta())
-        s.add(M2, [chunk(0)], [(1.0, 0.0)])
-        self.assertEqual(s.meta(), M2)
-
+class StoreIndiceVacioTest(unittest.TestCase):
     def test_indice_vacio_acepta_cualquier_meta(self):
         MemStore().check_meta(M2)
 
@@ -110,7 +139,6 @@ class ExtraTest(unittest.TestCase):
         self.assertIs(require_extra("json", "x"), __import__("json"))
 
     def test_fallo_interno_no_se_disfraza_de_extra(self):
-        import os, tempfile
         with tempfile.TemporaryDirectory() as d:
             with open(os.path.join(d, "gw_rota_mod.py"), "w") as f:
                 f.write("import gw_otro_que_no_existe\n")
@@ -131,7 +159,8 @@ class ExtraTest(unittest.TestCase):
 
     def test_importar_gworld_rag_no_trae_extras(self):
         code = "import sys, gworld.rag; assert not {'psycopg','psycopg2','pgvector','numpy','requests'} & set(sys.modules)"
-        subprocess.run([sys.executable, "-c", code], check=True)
+        r = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
 
 
 if __name__ == "__main__":

@@ -32,14 +32,14 @@ Fuera: `index`/`retrieve` (RAG-4), pgvector, el tamaño de los fragmentos en tok
 
 ## Acceptance
 
-- [ ] `machine_lock` excluye a otro proceso que tenga el candado (prueba con un hijo que lo toma) y vence con
+- [x] `machine_lock` excluye a otro proceso que tenga el candado (prueba con un hijo que lo toma) y vence con
   `LockBusyError`; respeta el orden de rutas; no borra el archivo; escribe y trunca el registro.
-- [ ] `OllamaEmbedder` contra un servidor HTTP falso local: vectores, versión por digest, modelo ausente, error HTTP;
+- [x] `OllamaEmbedder` contra un servidor HTTP falso local: vectores, versión por digest, modelo ausente, error HTTP;
   la llamada a `/api/embed` ocurre con el candado tomado.
-- [ ] `SqliteStore` pasa la suite de contrato, persiste entre aperturas (meta incluido) y consultar con otro modelo
+- [x] `SqliteStore` pasa la suite de contrato, persiste entre aperturas (meta incluido) y consultar con otro modelo
   pide reindexar.
-- [ ] Importar `gworld.rag`, `gworld.sqlite_store` y `gworld.ollama` no trae nada fuera de stdlib.
-- [ ] Los tests nuevos fallan sin su arreglo (`red-without-fix.sh`).
+- [x] Importar `gworld.rag`, `gworld.sqlite_store` y `gworld.ollama` no trae nada fuera de stdlib.
+- [x] Los tests nuevos fallan sin su arreglo (`red-without-fix.sh`).
 
 ## Files
 
@@ -49,6 +49,25 @@ Fuera: `index`/`retrieve` (RAG-4), pgvector, el tamaño de los fragmentos en tok
 
 ## Change log
 
+- `gworld/machine_lock.py`: `grun.lock/1` con stdlib (`hold`, `busy`, `holder`, `lock_path`; `LockBusyError`,
+  `LockUnavailableError`, `MachineLockError` sobre `RagError`); regla de Flatpak como `grun/paths.py`.
+- `gworld/ollama.py`: `OllamaEmbedder` (`model` y `version` son propiedades; `version` consulta `/api/tags` en cada
+  lectura, sin caché); `embed` toma el candado y llama a `/api/embed`; `lock_timeout` y `timeout` configurables.
+- `gworld/sqlite_store.py`: `SqliteStore`; tablas `meta(key, value)` con `model`/`version`/`dim` y
+  `chunks(id, fact_id, n, text, vector)`; vector = `dim` dobles little-endian (`struct`); `add` y `clear` en una
+  transacción (`BEGIN IMMEDIATE`).
+- `gworld/rag.py`: `StoreError(RagError, ValueError)`, `Store.dimension()`, `check_add`/`check_search`; `Embedder.model`
+  y `version` propiedades abstractas; `IndexMeta` rechaza campos vacíos; `cosine` normaliza con `math.hypot` y
+  rechaza lo no finito; `embed_checked` rechaza vectores vacíos y no numéricos con `EmbedError`.
+- Tests: `tests/store_contract.py` (mixin), `test_sqlite_store.py`, `test_ollama.py`, `test_machine_lock.py`,
+  `test_rag.py` (MemStore al contrato). Retirados de `pending.md` los leves y la observación de la revisión de RAG-2.
+
 ## Verification
+
+- `python3 -m unittest discover -s tests -t .` en verde; `md-links.py`, `agent-map.py`, `tests-after-main.py` en verde.
+- `red-without-fix.sh "python3 -m unittest tests.test_sqlite_store tests.test_ollama tests.test_machine_lock"
+  gworld/sqlite_store.py gworld/ollama.py gworld/machine_lock.py`: rojo sin el arreglo, verde con él.
+- Sin Ollama real ni estado real: servidor HTTP falso y `GALIVELOP_STATE_HOME` temporal. Pendiente de la persona: una
+  prueba con Ollama real y `bge-m3` en la máquina.
 
 Preguntas abiertas: van a [docs/questions.md](../questions.md), no aquí.
