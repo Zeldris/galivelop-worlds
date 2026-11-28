@@ -119,8 +119,15 @@ class ExtraTest(unittest.TestCase):
                 with self.assertRaises(ImportError) as cm:
                     require_extra("gw_rota_mod", "x")
                 self.assertNotIsInstance(cm.exception, MissingExtraError)
+                self.assertEqual(cm.exception.name, "gw_otro_que_no_existe")
             finally:
                 sys.path.remove(d)
+
+    def test_submodulo_ausente_es_extra_ausente(self):
+        with self.assertRaises(MissingExtraError) as cm:
+            require_extra("json.gw_no_existe", "pgvector")
+        self.assertIn('pip install "gworld[pgvector]"', str(cm.exception))
+        self.assertIn("json.gw_no_existe", str(cm.exception))
 
     def test_importar_gworld_rag_no_trae_extras(self):
         code = "import sys, gworld.rag; assert not {'psycopg','psycopg2','pgvector','numpy','requests'} & set(sys.modules)"

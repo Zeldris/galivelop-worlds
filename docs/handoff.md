@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `claude/rag-3` (desde `ccr-8aaeec3a-h97oxt`, sesión de la nube parada según la persona el 2026-11-28) |
-| **Fase / tarea** | RAG-2 hecho (`gworld/rag.py`: `Embedder`, `Store`, `IndexMeta`, `require_extra`; sin revisar aún). Antes: RAG-1 (`gworld/chunks.py`), MAP-6 hecho y con su revisión de bloque (1 hallazgo arreglado: ruta que no es objeto tumbaba el mapa). 0.2.0 en `main` (PR #5, `6c14104`), etiqueta y release `v0.2.0` publicadas. Presupuesto de compactaciones: 1 |
-| **Último punto estable** | Release `v0.2.0` y rama `claude/rag-3`; antes, RAG-2 (`8e28823`) y revisión corta de RAG-1 (`Findings: 2`, `94440b9`) |
-| **Siguiente paso** | Revisión corta de RAG-2 (`gworld/rag.py`, diff desde `94440b9`) y luego RAG-3 (`Store` SQLite y `Embedder` Ollama con `grun.lock/0`, ADR 0006). La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
+| **Fase / tarea** | RAG-2 hecho y con su revisión corta (`gworld/rag.py`: `Embedder`, `Store`, `IndexMeta`, `require_extra`; 1 hallazgo medio arreglado: submódulo ausente no daba la orden de instalar el extra; 7 leves a pendientes). Antes: RAG-1 (`gworld/chunks.py`), MAP-6 hecho y con su revisión de bloque (1 hallazgo arreglado: ruta que no es objeto tumbaba el mapa). 0.2.0 en `main` (PR #5, `6c14104`), etiqueta y release `v0.2.0` publicadas. Presupuesto de compactaciones: 1 |
+| **Último punto estable** | Revisión corta de RAG-2 (`Findings: 1`); antes, release `v0.2.0`, RAG-2 (`8e28823`) y revisión corta de RAG-1 (`Findings: 2`, `94440b9`) |
+| **Siguiente paso** | RAG-3 (`Store` SQLite y `Embedder` Ollama con `grun.lock/0`, ADR 0006), con los leves de RAG-2 sobre el contrato de `Store` (suite `StoreContract`) en pendientes. La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación

@@ -54,8 +54,10 @@ def require_extra(module: str, extra: str):
     try:
         return importlib.import_module(module)
     except ImportError as exc:
-        if exc.name is not None and exc.name != module.split(".")[0]:
-            raise  # falla un import interno del módulo, no que falte el extra
+        # falta el extra si lo ausente es ``module`` o uno de sus paquetes padre (``a`` o ``a.b`` de ``a.b.c``);
+        # cualquier otro nombre es un import interno roto y se relanza tal cual
+        if exc.name is not None and not (module == exc.name or module.startswith(exc.name + ".")):
+            raise
         raise MissingExtraError(
             f"falta el paquete '{module}' del extra '{extra}': instálalo con: pip install \"gworld[{extra}]\""
         ) from exc
