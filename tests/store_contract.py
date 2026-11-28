@@ -60,6 +60,35 @@ class StoreContract:
         self.assertIn("misma longitud", str(cm.exception))
         self.assertIsNone(s.meta())
 
+    def test_vectores_sin_valores_validos_fallan_sin_guardar(self):
+        casos = (
+            ([(1.0, 0.0), (0.0, 0.0)], "norma 0"),
+            ([(1.0, float("nan"))], "no finit"),
+            ([(1.0, float("inf"))], "no finit"),
+            ([(1.0, "1")], "numéricos"),
+            ([(1.0, True)], "numéricos"),
+            (["ab"], "lista o tupla"),
+            ([5], "lista o tupla"),
+            ([None], "lista o tupla"),
+        )
+        for vectors, msg in casos:
+            with self.subTest(vectors=vectors):
+                s = self.make_store()
+                with self.assertRaises(StoreError) as cm:
+                    s.add(M1, [chunk(str(i), i) for i in range(len(vectors))], vectors)
+                self.assertIn(msg, str(cm.exception))
+                self.assertIsNone(s.meta())
+                self.assertIsNone(s.dimension())
+
+    def test_consulta_sin_valores_validos_falla(self):
+        s = self.make_store()
+        s.add(M1, [chunk("a")], [(1.0, 0.0)])
+        for q, msg in (((0.0, 0.0), "norma 0"), ((1.0, float("nan")), "no finit"), ((1.0, "1"), "numéricos"),
+                       ((1.0, True), "numéricos"), (5, "lista o tupla")):
+            with self.subTest(q=q), self.assertRaises(StoreError) as cm:
+                s.search(M1, q, 1)
+            self.assertIn(msg, str(cm.exception))
+
     def test_k_no_positivo_falla(self):
         s = self.make_store()
         s.add(M1, [chunk("a")], [(1.0, 0.0)])

@@ -91,6 +91,26 @@ def cosine(a: Sequence[float], b: Sequence[float]) -> float:
     return result
 
 
+def _check_vector(v) -> None:
+    """Un vector del ``Store``: lista o tupla de ``int``/``float`` (no ``bool``) finitos y de norma no nula."""
+    if not isinstance(v, (list, tuple)):
+        raise StoreError(f"un vector tiene que ser una lista o tupla, no {type(v).__name__}")
+    if any(isinstance(x, bool) or not isinstance(x, (int, float)) for x in v):
+        raise StoreError("los elementos de un vector tienen que ser numéricos (int o float, no bool)")
+    try:
+        finite = all(math.isfinite(x) for x in v)
+    except OverflowError:
+        finite = False
+    if not finite:
+        raise StoreError("un vector trae valores no finitos")
+    if v:
+        norm = math.hypot(*(float(x) for x in v))
+        if norm == 0:
+            raise StoreError("un vector de norma 0 no se puede guardar ni consultar: no hay coseno")
+        if not math.isfinite(norm):
+            raise StoreError("un vector de norma no finita no se puede guardar ni consultar")
+
+
 class Embedder(ABC):
     """Convierte textos en vectores. Las subclases declaran ``model`` y ``version`` (atributo de clase o
     propiedad); sin ellos no se pueden instanciar."""
@@ -172,6 +192,8 @@ class Store(ABC):
         self.check_meta(meta)
         if len(chunks) != len(vectors):
             raise StoreError(f"{len(chunks)} fragmentos y {len(vectors)} vectores: tienen que ser tantos como tantos")
+        for v in vectors:
+            _check_vector(v)
         dims = {len(v) for v in vectors}
         if not dims:
             return None
@@ -188,6 +210,7 @@ class Store(ABC):
         self.check_meta(meta)
         if isinstance(k, bool) or not isinstance(k, int) or k <= 0:
             raise StoreError(f"k tiene que ser un entero mayor que 0, no {k!r}")
+        _check_vector(vector)
         have = self.dimension()
         if have is not None and len(vector) != have:
             raise StoreError(f"el vector de consulta tiene dimensión {len(vector)} y el índice {have}")

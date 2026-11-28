@@ -4,6 +4,7 @@
 (``gworld.machine_lock``) y hace ``POST /api/embed``. Todo fallo de red, HTTP o JSON es ``EmbedError`` con el motivo.
 """
 
+import http.client
 import json
 import os
 import urllib.error
@@ -58,18 +59,20 @@ class OllamaEmbedder(Embedder):
     def _request(self, path: str, payload):
         url = self.base_url + path
         body = None if payload is None else json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=body, method="GET" if body is None else "POST",
-                                     headers={"Content-Type": "application/json"})
         try:
+            req = urllib.request.Request(url, data=body, method="GET" if body is None else "POST",
+                                         headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 raw = resp.read()
         except urllib.error.HTTPError as exc:
             try:
                 detail = exc.read(300).decode("utf-8", "replace").strip()
+            except (OSError, http.client.HTTPException):
+                detail = ""
             finally:
                 exc.close()
             raise EmbedError(f"Ollama respondió HTTP {exc.code} en {url}: {detail}") from exc
-        except (urllib.error.URLError, OSError) as exc:
+        except (urllib.error.URLError, OSError, ValueError, http.client.HTTPException) as exc:
             raise EmbedError(f"no se pudo hablar con Ollama en {url}: {getattr(exc, 'reason', exc)}") from exc
         try:
             return json.loads(raw.decode("utf-8"))

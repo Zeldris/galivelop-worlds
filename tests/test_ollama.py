@@ -133,6 +133,23 @@ class OllamaTest(unittest.TestCase):
             OllamaEmbedder(base_url=url, timeout=2, lock_timeout=1).embed(["x"])
         self.assertIn("no se pudo hablar con Ollama", str(cm.exception))
 
+    def test_url_mala_da_embed_error(self):
+        for base, msg in (("http://h:abc", "no se pudo hablar con Ollama"), ("/x", "no se pudo hablar con Ollama")):
+            with self.subTest(base=base):
+                with self.assertRaises(EmbedError) as cm:
+                    OllamaEmbedder(base_url=base, timeout=2, lock_timeout=1).embed(["x"])
+                self.assertIn(msg, str(cm.exception))
+
+    def test_lectura_incompleta_da_embed_error(self):
+        import http.client
+        resp = mock.MagicMock()
+        resp.__enter__.return_value = resp
+        resp.read.side_effect = http.client.IncompleteRead(b"ab", 5)
+        with mock.patch("urllib.request.urlopen", return_value=resp):
+            with self.assertRaises(EmbedError) as cm:
+                self.emb.embed(["x"])
+        self.assertIn("no se pudo hablar con Ollama", str(cm.exception))
+
     def test_sin_textos_no_llama(self):
         self.assertEqual(self.emb.embed([]), [])
         self.assertEqual(self.srv.calls, [])
