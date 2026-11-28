@@ -8,10 +8,10 @@
 
 | Campo | Valor |
 |---|---|
-| **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | RAG-2 hecho (`gworld/rag.py`: `Embedder`, `Store`, `IndexMeta`, `require_extra`; sin revisar aún). Antes: RAG-1 (`gworld/chunks.py`), MAP-6 hecho y con su revisión de bloque (1 hallazgo arreglado: ruta que no es objeto tumbaba el mapa). 0.2.0 en `main` (PR #5, `6c14104`); falta la etiqueta y la release `v0.2.0`, que crea la persona en GitHub. Presupuesto de compactaciones: 1 |
-| **Último punto estable** | RAG-2 (commit de esta fila); antes, revisión corta de RAG-1 (`Findings: 2`, `94440b9`) |
-| **Siguiente paso** | RAG-3 (`Store` SQLite y `Embedder` Ollama con `grun.lock/0`, ADR 0006). La persona publica la release `v0.2.0` sobre `6c14104` cuando pueda (no bloquea) |
+| **Rama** | `claude/rag-3` (desde `ccr-8aaeec3a-h97oxt`, sesión de la nube parada según la persona el 2026-11-28) |
+| **Fase / tarea** | RAG-2 hecho (`gworld/rag.py`: `Embedder`, `Store`, `IndexMeta`, `require_extra`; sin revisar aún). Antes: RAG-1 (`gworld/chunks.py`), MAP-6 hecho y con su revisión de bloque (1 hallazgo arreglado: ruta que no es objeto tumbaba el mapa). 0.2.0 en `main` (PR #5, `6c14104`), etiqueta y release `v0.2.0` publicadas. Presupuesto de compactaciones: 1 |
+| **Último punto estable** | Release `v0.2.0` y rama `claude/rag-3`; antes, RAG-2 (`8e28823`) y revisión corta de RAG-1 (`Findings: 2`, `94440b9`) |
+| **Siguiente paso** | Revisión corta de RAG-2 (`gworld/rag.py`, diff desde `94440b9`) y luego RAG-3 (`Store` SQLite y `Embedder` Ollama con `grun.lock/0`, ADR 0006). La rama `claude/release-0.1.0` queda superada por `main` y sin uso |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
@@ -20,11 +20,11 @@ _(nada todavía: 0.3 empieza con MAP-6)_
 
 ## Hecho (5 últimas)
 
-1. 2026-11-28 — MAP-6: `gworld/maps.py` salta rutas inválidas y burgos sin nombre, `parent` solo de regiones existentes, `_C_RIVER` fuera y `_MIN_RECORDS = 45` explicado; `code_of` comprueba el mensaje.
-2. 2026-11-28 — 0.2.0 publicada en `main` (PR #5, `6c14104`): versión 0.2.0 y notas en `docs/releases/v0.2.0.md`; la etiqueta y la release, pendientes de la persona.
-3. 2026-11-28 — 0.2 fusionada en `main` (PR #4, `45884d4`) con el CI en verde; fase 2 aplicada (Q-35 a Q-45: notas de ahorro, `tests/wmf.py`, MAP-6 en 0.3).
-4. 2026-11-27 — MAP-5: equivalencia con `map-generator/` de WMF sobre Helek (import, medidas, reglas, caminos); fixtures en `tests/fixtures/helek/`; revisión de bloque con 2 arreglos.
-5. 2026-11-27 — MAP-4: comprobador de mapas contra el canon (gworld.maprules/0, geometría, motor check_rules, conversor de Tarkor; humo con Helek 13+9 ok, 3 sin decidir); revisión de bloque con 12 arreglos
+1. 2026-11-28 — Release `v0.2.0` publicada sobre `6c14104` (autorizada por la persona); test de Tarkor (`tests/test_tarkor_pack.py`) en verde, comprobado solo en local (Steam Deck) con `GW_WMF_DIR=../World-Maker-Fantasy` en `19f3f10d`: 518 hechos; en CI se salta.
+2. 2026-11-28 — MAP-6: `gworld/maps.py` salta rutas inválidas y burgos sin nombre, `parent` solo de regiones existentes, `_C_RIVER` fuera y `_MIN_RECORDS = 45` explicado; `code_of` comprueba el mensaje.
+3. 2026-11-28 — 0.2.0 publicada en `main` (PR #5, `6c14104`): versión 0.2.0 y notas en `docs/releases/v0.2.0.md`; la etiqueta y la release, pendientes de la persona.
+4. 2026-11-28 — 0.2 fusionada en `main` (PR #4, `45884d4`) con el CI en verde; fase 2 aplicada (Q-35 a Q-45: notas de ahorro, `tests/wmf.py`, MAP-6 en 0.3).
+5. 2026-11-27 — MAP-5: equivalencia con `map-generator/` de WMF sobre Helek (import, medidas, reglas, caminos); fixtures en `tests/fixtures/helek/`; revisión de bloque con 2 arreglos.
 
 ## Pendiente
 
