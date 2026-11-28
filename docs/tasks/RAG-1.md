@@ -27,6 +27,7 @@ embeddings ni almacén (eso es RAG-2 y siguientes).
 ## Change log
 
 - `gworld/chunks.py`: `Chunk`, `ChunkError(ValueError)` y `chunk_facts` (párrafos, frases, palabras; ids `chunk:` + huella de `fact_id`, `n` y texto).
+- Revisión (`Findings: 2`): nivel de líneas entre frases y palabras (una fila de tabla no se corta si cabe) y pruebas de id (`fact_id`, `n`, `ensure_ascii`, id fijo); 20 pruebas.
 - `tests/test_chunks.py`: 15 pruebas (bordes, unicode, ids deterministas, cobertura en orden, canon de ejemplo).
 
 ## Verification

@@ -26,6 +26,7 @@ from gworld.canon import Fact
 
 _PARAGRAPH = re.compile(r"(\n[ \t]*\n\s*)")
 _SENTENCE = re.compile(r"(?<=[.!?…])(\s+)")
+_LINE = re.compile(r"(\n)")
 
 
 class ChunkError(ValueError):
@@ -71,11 +72,11 @@ def _units(text: str, max_words: int) -> list[tuple[str, str]]:
     if _words(text) <= max_words:
         return [("", text)]
     out: list[tuple[str, str]] = []
-    for lvl, pattern in enumerate((_PARAGRAPH, _SENTENCE)):
+    for pattern in (_PARAGRAPH, _SENTENCE, _LINE):
         pieces = _pieces(text, pattern)
         if len(pieces) > 1:
             for i, (sep, piece) in enumerate(pieces):
-                sub = _units(piece, max_words) if lvl == 0 or _words(piece) > max_words else [("", piece)]
+                sub = _units(piece, max_words)
                 out += [((sep if j == 0 else s) if i or j else "", t) for j, (s, t) in enumerate(sub)]
             return out
     words = text.split()

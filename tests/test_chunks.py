@@ -1,6 +1,8 @@
 """RAG-1: troceado del canon en Chunk con los ids de hecho."""
 
 import dataclasses
+import hashlib
+import json
 import re
 import unittest
 from pathlib import Path
@@ -66,6 +68,14 @@ class ChunkTest(unittest.TestCase):
             cs = chunk_facts([fact(text)], m)
             self.assertTrue(all(1 <= len(c.text.split()) <= m for c in cs), m)
 
+    def test_fila_de_tabla_no_se_parte_si_cabe(self):
+        cs = chunk_facts([fact("| a | b |\n| c | d |")], 6)
+        self.assertEqual([c.text for c in cs], ["| a | b |", "| c | d |"])
+
+    def test_linea_mayor_que_el_tope_se_parte_por_palabras(self):
+        cs = chunk_facts([fact("| a | b | c | d |\n| e |")], 3)
+        self.assertEqual([c.text for c in cs], ["| a |", "b | c", "| d |", "| e |"])
+
     def test_palabra_sin_espacios_larga(self):
         cs = chunk_facts([fact("x" * 5000)], 3)
         self.assertEqual([c.text for c in cs], ["x" * 5000])
@@ -88,6 +98,23 @@ class ChunkTest(unittest.TestCase):
         self.assertEqual(chunk_facts(facts, 8), chunk_facts(facts, 8))
         ids = [c.id for c in chunk_facts(facts, 8)]
         self.assertEqual(len(ids), len(set(ids)))
+
+    def test_mismo_texto_en_dos_hechos_ids_distintos(self):
+        a, b = chunk_facts([fact("igual", "fact:" + "1" * 32), fact("igual", "fact:" + "2" * 32)])
+        self.assertNotEqual(a.id, b.id)
+
+    def test_mismo_texto_en_dos_fragmentos_ids_distintos(self):
+        a, b = chunk_facts([fact("x\n\nx")], 1)
+        self.assertEqual(a.text, b.text)
+        self.assertNotEqual(a.id, b.id)
+
+    def test_id_fijo_con_texto_no_ascii(self):
+        fid, text = "fact:" + "a" * 32, "dragón 龍"
+        key = json.dumps([fid, 0, text], ensure_ascii=False)
+        expected = "chunk:" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:32]
+        self.assertEqual(chunk_facts([fact(text, fid)])[0].id, expected)
+        self.assertEqual(expected, "chunk:" + hashlib.sha256(
+            ('["fact:' + "a" * 32 + '", 0, "dragón 龍"]').encode("utf-8")).hexdigest()[:32])
 
     def test_editar_un_hecho_cambia_solo_sus_ids(self):
         a, b = fact(words(30), "fact:" + "1" * 32), fact(words(30, 100), "fact:" + "2" * 32)
