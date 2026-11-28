@@ -9,9 +9,9 @@
 | Campo | Valor |
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
-| **Fase / tarea** | 0.2 (W4 Mapas) fusionada en `main` (PR #4, `45884d4`). Presupuesto de compactaciones: 1 |
+| **Fase / tarea** | 0.2 fusionada en `main` (PR #4, `45884d4`). Publicando 0.2.0: versión subida y notas en `docs/releases/v0.2.0.md`. Presupuesto de compactaciones: 1 |
 | **Último punto estable** | Fusión del PR #4 en `main` (`45884d4`) |
-| **Siguiente paso** | Preguntar a la persona si publica 0.2.0 (como 0.1.0: versión, notas, etiqueta y release). Después, 0.3: CHK-1 espera el acceso al GVE; MAP-6 (barrido de `gworld/maps.py`) no tiene bloqueos |
+| **Siguiente paso** | La persona autorizó el 2026-11-28 publicar 0.2.0 («Si, publica»): PR de la rama a `main`, fusión con el CI en verde, etiqueta y release `v0.2.0` sobre la fusión con esas notas; después vaciar «Para la próxima publicación» y seguir con 0.3 (MAP-6; CHK-1 espera el acceso al GVE) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
 ## Para la próxima publicación
