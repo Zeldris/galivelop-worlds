@@ -10,7 +10,7 @@
 |---|---|
 | **Rama** | `ccr-8aaeec3a-h97oxt` |
 | **Fase / tarea** | RAG-1 hecho (`gworld/chunks.py`). Antes: MAP-6 hecho y con su revisión de bloque (1 hallazgo arreglado: ruta que no es objeto tumbaba el mapa). 0.2.0 en `main` (PR #5, `6c14104`); falta la etiqueta y la release `v0.2.0`, que crea la persona en GitHub. Presupuesto de compactaciones: 1 |
-| **Último punto estable** | Revisión de bloque de MAP-6 (`Findings: 1`) |
+| **Último punto estable** | Revisión corta de RAG-1 (`Findings: 2`, `94440b9`); leves apuntados en pending.md |
 | **Siguiente paso** | RAG-2 (Embedder y Store, ADR 0006). La persona publica la release `v0.2.0` sobre `6c14104` cuando pueda (no bloquea) |
 | **Check** | `python3 .claude/gw/scripts/md-links.py`, `python3 .claude/gw/scripts/agent-map.py`, `python3 .claude/gw/scripts/tests-after-main.py`, `python3 -m unittest discover -s tests -t .`, `python3 .claude/gw/scripts/ci-local.py --validate`: verde (los tests ya van en el check) |
 
